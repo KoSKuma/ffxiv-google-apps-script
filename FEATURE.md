@@ -11,6 +11,11 @@ This document tracks all features available in the FFXIV Google Apps Script proj
 ### 🟡 In Progress Features
 - None currently
 
+### 🧪 Debug/Utility Features
+- [Lookup Item Info](#-lookup-item-info-debug-tool) - v1.0 (2025-12-28) - `lookupItemInfo(itemName)` - Debug tool for testing single item lookup
+- [Process Item List](#-process-item-list-debug-tool) - v1.0 (2025-12-28) - `processItemList(sheetName, itemColumn, startRow)` - Debug tool for testing batch item processing
+- [Crafting Materials](#-crafting-materials-debug-tool) - v1.0 (2025-12-28) - `getCraftingMaterials(itemName, includeSubIngredients)` - Debug tool for testing individual crafting materials
+
 ### ⬜ Planned Features
 - [Item Information Lookup (Full)](#-item-information-lookup-full) - Full version with market board prices
 
@@ -18,8 +23,9 @@ This document tracks all features available in the FFXIV Google Apps Script proj
 
 ## Feature Status
 
-- ✅ **Implemented** - Feature is complete and working
+- ✅ **Implemented** - Feature is complete and working (production-ready)
 - 🟡 **In Progress** - Feature is being developed
+- 🧪 **Debug/Utility** - Feature is working but primarily for debugging/testing purposes
 - ⬜ **Planned** - Feature is planned but not yet started
 - ❌ **Deprecated** - Feature is no longer recommended/used
 
@@ -207,7 +213,61 @@ Row 8:           |          | (materials)   | (quantities)
 
 ## In Progress Features
 
-### 🟡 Crafting Materials
+Currently, there are no features in active development.
+
+---
+
+## Debug/Utility Features
+
+The following features are available but are primarily for debugging and testing purposes. They are accessible via the Debug menu in "FFXIV Tools".
+
+### 🧪 Lookup Item Info (Debug Tool)
+
+**Version:** 1.0  
+**Last Updated:** 2025-12-28  
+**Function:** `lookupItemInfo(itemName)`
+
+Debug tool for testing single item information lookup. Same functionality as the production feature but accessible via Debug menu for testing purposes.
+
+**Parameters:**
+- `itemName` (string, required) - Name of the item to look up (e.g., "Iron Ore")
+
+**Returns:** 
+- `Object` - Item information object with gathering locations, vendor info, and reduction sources
+
+**Usage:**
+- **As library:** `LibraryName.lookupItemInfo('Iron Ore')`
+- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "Debug" → "Lookup Item Info"
+
+**Note:** This is the same function used by the production "Obtain Material Information" feature, but accessible individually for debugging.
+
+---
+
+### 🧪 Process Item List (Debug Tool)
+
+**Version:** 1.0  
+**Last Updated:** 2025-12-28  
+**Function:** `processItemList(sheetName, itemColumn, startRow)`
+
+Debug tool for testing batch item processing with customizable parameters. Same functionality as the production feature but with manual parameter input for testing.
+
+**Parameters:**
+- `sheetName` (string, optional) - Sheet name (uses CONFIG.SHEET_NAMES.MAIN if not provided)
+- `itemColumn` (string, optional) - Column letter containing item names (defaults to 'A')
+- `startRow` (number, optional) - Starting row number (defaults to 2, assuming row 1 is header)
+
+**Returns:** 
+- `Array<Object>` - Array of item information objects
+
+**Usage:**
+- **As library:** `LibraryName.processItemList('Items', 'A', 2)`
+- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "Debug" → "Process Item List"
+
+**Note:** This is the same function used by the production "Obtain Material Information" feature, but with manual parameter input for testing different sheets/columns.
+
+---
+
+### 🧪 Crafting Materials (Debug Tool)
 
 **Version:** 1.0  
 **Last Updated:** 2025-12-28  
@@ -224,7 +284,7 @@ Gets all materials needed to craft an item, including recursive sub-ingredients 
 
 **Usage:**
 - **As library:** `LibraryName.getCraftingMaterials('Ceviche')` or `LibraryName.getCraftingMaterials('Ceviche', true)`
-- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "In Development" → "Get Crafting Materials"
+- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "Debug" → "Get Crafting Materials"
 
 **How it works:**
 1. Takes item name as input (e.g., "Ceviche")
@@ -310,81 +370,6 @@ const directOnly = FFXIVTools.getCraftingMaterials('Ceviche', false);
 - Maximum recursion depth is 5 levels to prevent excessive API usage
 - Items that cannot be crafted will return `canBeCrafted: false`
 - Item names must match exactly (case-sensitive)
-
----
-
-### ✅ Crafting Request Processing
-
-**Version:** 1.0  
-**Last Updated:** 2025-12-28  
-**Function:** `processCraftingRequest(sheetName, itemColumn, quantityColumn, startRow)`
-
-Batch processes crafting requests from a spreadsheet. Reads item names and quantities, calculates all materials needed (including recursive sub-ingredients), and writes results to the spreadsheet with proper formatting and padding.
-
-**Parameters:**
-- `sheetName` (string, optional) - Sheet name (defaults to "Requested for Crafting")
-- `itemColumn` (string, optional) - Column letter for item names (defaults to 'A')
-- `quantityColumn` (string, optional) - Column letter for quantities (defaults to 'B')
-- `startRow` (number, optional) - Starting row number (defaults to 2, assuming row 1 is header)
-
-**Returns:** 
-- `Array<Object>` - Array of processing results with success status and material counts
-
-**Usage:**
-- **As library:** `LibraryName.processCraftingRequest()` or `LibraryName.processCraftingRequest('Requested for Crafting', 'A', 'B', 2)`
-- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "Process Crafting Request"
-
-**How it works:**
-1. Reads item names from column A and quantities from column B
-2. For each item, gets crafting materials (including recursive sub-ingredients)
-3. Calculates total material quantities (material amount × item quantity)
-4. Inserts rows for materials below each item
-5. Writes material names to column C and quantities to column D
-6. Adds padding blank line between items for readability
-
-**Data Sources:**
-- **XIVAPI v2** (https://v2.xivapi.com/api) - Item name to ID conversion
-- **Garland Tools** (https://www.garlandtools.org/) - Crafting recipes and ingredient information
-
-**Spreadsheet Structure:**
-- **Column A:** Item names (input)
-- **Column B:** Quantity to craft (input)
-- **Column C:** Material names (output, one per line)
-- **Column D:** Total material quantity needed (output, material amount × column B)
-
-**Example:**
-```
-Input:
-Row 1: Item Name | Quantity | Material Name | Material Quantity
-Row 2: Ceviche   | 3        |               |
-Row 3: Iron Ore   | 5        |               |
-
-Output after processing:
-Row 1: Item Name | Quantity | Material Name | Material Quantity
-Row 2: Ceviche   | 3        |               |
-Row 3:           |          | Cloudsail     | 3
-Row 4:           |          | Turali Corn   | 36
-Row 5:           |          | ...           | ...
-Row 6:           |          |               | (blank padding line)
-Row 7: Iron Ore  | 5        |               |
-Row 8:           |          | (materials)   | (quantities)
-```
-
-**Features:**
-- ✅ Batch processing of multiple items
-- ✅ Automatic quantity calculation (multiplies by item quantity)
-- ✅ Recursive crafting support (includes sub-ingredients)
-- ✅ Dynamic row insertion for materials
-- ✅ Padding blank lines between items
-- ✅ Error handling for non-craftable items
-- ✅ Processes items in reverse order to avoid row shifting issues
-
-**Notes:**
-- Requires internet connection to call XIVAPI and Garland Tools APIs
-- Processes items in reverse order to handle row insertion correctly
-- Adds 1 second delay between items to respect API rate limits
-- Items that cannot be crafted will show "Cannot be crafted" in column C
-- Material quantities are automatically multiplied by the quantity in column B
 
 ---
 

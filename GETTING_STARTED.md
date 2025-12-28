@@ -341,6 +341,8 @@ The library exposes **high-level public functions** from `Code.gs`. Internal uti
 **Available Public Functions:**
 - `lookupItemInfo(itemName)` - Looks up FFXIV item information (gathering, vendors, prices)
 - `processItemList(sheetName, itemColumn, startRow)` - Processes a list of items from spreadsheet
+- `getCraftingMaterials(itemName, includeSubIngredients)` - Gets all materials needed to craft an item (recursive)
+- `processCraftingRequest(sheetName, itemColumn, quantityColumn, startRow)` - Batch processes crafting requests
 
 **Example Usage:**
 

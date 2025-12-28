@@ -64,15 +64,26 @@ This file tracks tasks, features, and improvements for the FFXIV Google Apps Scr
 
 ## Completed Tasks
 
-### 2025
-- ✅ Project setup and structure
-- ✅ Created `.cursorrules` with development guidelines
-- ✅ Created documentation files (ARCHITECTURE.md, DEVELOPMENT.md, API.md, CONTRIBUTING.md, PROMPTS.md)
-- ✅ Created basic project structure (Code.gs, Utils.gs, Config.gs)
-- ✅ Set up `.gitignore` and `package.json`
-- ✅ Created TODO.md for task tracking
-- ✅ Item Information Lookup feature (v1.0) - Gathering locations, vendor prices, aetherial reduction
-- ✅ Crafting Materials feature (v1.0) - Get all materials needed to craft items with recursive sub-ingredients
+### 2025-12-28
+- ✅ **Project Initialization**
+  - Set up project structure with `.cursorrules`, documentation files, and basic code files
+  - Configured `.gitignore`, `package.json`, and `clasp` integration
+  - Created comprehensive documentation (ARCHITECTURE.md, DEVELOPMENT.md, API.md, CONTRIBUTING.md, PROMPTS.md, GETTING_STARTED.md, QUICK_REFERENCE.md)
+- ✅ **Item Information Lookup (v1.0)**
+  - Implemented gathering locations, vendor prices, and aetherial reduction sources
+  - Integrated XIVAPI v2 and Garland Tools API
+  - Added batch processing with spreadsheet integration
+- ✅ **Crafting Materials & Request Processing (v1.0)**
+  - Implemented recursive crafting materials lookup with cycle detection
+  - Created batch processing for crafting requests from spreadsheet
+  - Added dynamic row insertion and quantity calculation
+- ✅ **Documentation & Organization**
+  - Created SHEETS_FORMULAS.md for Google Sheets formula reference
+  - Created FEATURE.md for feature tracking and documentation
+  - Created API_DOCUMENTATION.md and NON_WORKING_APIS.md for API reference
+  - Updated .cursorrules with date/time handling and documentation maintenance guidelines
+  - Finalized menu structure (production features in main menu, debug tools in Debug submenu)
+  - Created LIBRARY_TEMPLATE.gs for easy library integration
 
 ---
 

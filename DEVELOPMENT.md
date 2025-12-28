@@ -45,11 +45,12 @@
    # or
    clasp push
    ```
+   **Note:** Files listed in `.claspignore` (like `LIBRARY_TEMPLATE.gs`) are excluded from push to prevent conflicts.
 3. **Open in Apps Script editor** to test:
    ```bash
    npm run open
    # or
-   clasp open
+   clasp open-script
    ```
 4. **View logs** after execution:
    ```bash

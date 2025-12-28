@@ -89,7 +89,12 @@
   - Mark completed tasks as ✅ and move to "Completed Tasks" section
   - Add new tasks to appropriate sections (Current Sprint, Planned Features, Technical Debt, etc.)
   - Update task status (⬜ Not Started, 🟡 In Progress, ✅ Completed, ❌ Cancelled)
+- **Library Template Maintenance**: Update `LIBRARY_TEMPLATE.gs` when making changes to menu handlers in `Code.gs`
+  - When modifying `onOpen()` function: Update the menu structure in `LIBRARY_TEMPLATE.gs`
+  - When modifying menu handler functions (`menuLookupItemInfo`, `menuProcessItemList`, etc.): Update the corresponding functions in `LIBRARY_TEMPLATE.gs`
+  - Keep the template identical to `Code.gs` menu handlers, but replace direct function calls with library calls (e.g., `lookupItemInfo()` → `FFXIVTools.lookupItemInfo()`)
+  - The template should mirror `Code.gs` menu handlers exactly, only changing function calls to use the library identifier
 - Documentation should reflect the current state of the codebase
-- If AI assistants are used, ensure they update relevant documentation files including `TODO.md` and `FEATURE.md`
+- If AI assistants are used, ensure they update relevant documentation files including `TODO.md`, `FEATURE.md`, and `LIBRARY_TEMPLATE.gs`
 - Review documentation accuracy during code reviews
 

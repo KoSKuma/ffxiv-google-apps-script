@@ -211,24 +211,18 @@ function getVendorInfo(itemId, garlandData) {
     const item = data.item;
     const partials = data.partials || [];
     
-    // Get vendor IDs from item
+    // Get vendor IDs from item (for Gil purchases)
     const vendorIds = item.vendors || [];
     
-    if (vendorIds.length === 0) {
-      // Check if item has a base price
-      if (item.price && item.price > 0) {
-        vendors.push({
-          npcName: 'Standard Merchant',
-          location: 'Various',
-          price: item.price,
-          currency: 'Gil',
-          note: 'Base NPC price'
-        });
-      }
-      return vendors;
+    // Get trade shops (for special currency purchases)
+    const tradeShops = item.tradeShops || [];
+    
+    // If no vendors and no trade shops found, item cannot be bought
+    if (vendorIds.length === 0 && tradeShops.length === 0) {
+      return vendors; // Return empty array - item is not sold
     }
     
-    // Extract vendor details from partials
+    // Process regular vendors (Gil purchases)
     vendorIds.forEach(function(vendorId) {
       const npcPartial = partials.find(function(p) {
         return p.type === 'npc' && p.id === String(vendorId);
@@ -259,16 +253,62 @@ function getVendorInfo(itemId, garlandData) {
       }
     });
     
-    // If no vendors found but item has a price, add it
-    if (vendors.length === 0 && item.price && item.price > 0) {
-      vendors.push({
-        npcName: 'Standard Merchant',
-        location: 'Various',
-        price: item.price,
-        currency: 'Gil',
-        note: 'Base NPC price'
+    // Process trade shops (special currency purchases)
+    tradeShops.forEach(function(shop) {
+      const shopName = shop.shop || 'Unknown Shop';
+      const listings = shop.listings || [];
+      
+      listings.forEach(function(listing) {
+        const currencies = listing.currency || [];
+        
+        currencies.forEach(function(currency) {
+          const currencyId = currency.id;
+          const amount = currency.amount || 0;
+          
+          // Find currency name in partials
+          const currencyPartial = partials.find(function(p) {
+            return p.type === 'item' && p.id === String(currencyId);
+          });
+          
+          const currencyName = currencyPartial && currencyPartial.obj ? 
+            currencyPartial.obj.n || 'Currency #' + currencyId : 
+            'Currency #' + currencyId;
+          
+          // Get NPC details if available
+          const npcIds = shop.npcs || [];
+          let npcName = shopName;
+          let location = 'Various';
+          
+          if (npcIds.length > 0) {
+            const npcId = npcIds[0]; // Use first NPC
+            const npcPartial = partials.find(function(p) {
+              return p.type === 'npc' && p.id === String(npcId);
+            });
+            
+            if (npcPartial && npcPartial.obj) {
+              const npcObj = npcPartial.obj;
+              npcName = npcObj.n || shopName;
+              location = npcObj.c && npcObj.c.length >= 2 ? 
+                'Coordinates: ' + npcObj.c[0] + ', ' + npcObj.c[1] : 
+                'Location: ' + (npcObj.l || 'Unknown');
+            }
+          }
+          
+          vendors.push({
+            npcName: npcName,
+            location: location,
+            price: amount,
+            currency: currencyName,
+            shop: shopName,
+            npcType: null,
+            level: null
+          });
+        });
       });
-    }
+    });
+    
+    // If no vendors were successfully processed, item cannot be bought
+    // (This shouldn't happen if vendorIds.length > 0 or tradeShops.length > 0, but handle edge case)
   } catch (error) {
     logWithTimestamp('Error getting vendor info: ' + error.toString());
     // Don't throw - return empty array if vendor info unavailable
@@ -301,6 +341,7 @@ function formatGatheringLocations(locations) {
 
 /**
  * Formats vendor information for display
+ * Deduplicates vendors by name, price, and currency
  * @param {Array<Object>} vendors - Array of vendor objects
  * @return {string} Formatted string of vendor information
  */
@@ -309,8 +350,87 @@ function formatVendorInfo(vendors) {
     return 'Not available';
   }
   
-  return vendors.map(function(vendor) {
+  // Deduplicate vendors by name, price, and currency
+  const seen = {};
+  const uniqueVendors = [];
+  
+  vendors.forEach(function(vendor) {
+    // Create a unique key from vendor name, price, and currency
+    const key = vendor.npcName + '|' + vendor.price + '|' + vendor.currency;
+    
+    if (!seen[key]) {
+      seen[key] = true;
+      uniqueVendors.push(vendor);
+    }
+  });
+  
+  return uniqueVendors.map(function(vendor) {
     return vendor.npcName + ' - ' + vendor.price + ' ' + vendor.currency + ' (' + vendor.location + ')';
   }).join('; ');
+}
+
+/**
+ * Gets reduction source information for an item from Garland Tools data
+ * Items can be obtained by reducing other items (aetherial reduction)
+ * @param {Object} garlandData - Garland Tools data
+ * @return {Array<Object>} Array of reduction source objects with item names
+ */
+function getReductionSources(garlandData) {
+  const sources = [];
+  
+  try {
+    if (!garlandData || !garlandData.item) {
+      return sources;
+    }
+    
+    const item = garlandData.item;
+    const partials = garlandData.partials || [];
+    
+    // Get reduction source item IDs
+    const reducedFrom = item.reducedFrom || [];
+    
+    if (reducedFrom.length === 0) {
+      return sources;
+    }
+    
+    // Extract item names from partials
+    reducedFrom.forEach(function(itemId) {
+      const itemPartial = partials.find(function(p) {
+        return p.type === 'item' && p.id === String(itemId);
+      });
+      
+      if (itemPartial && itemPartial.obj) {
+        sources.push({
+          itemId: itemId,
+          itemName: itemPartial.obj.n || 'Item #' + itemId
+        });
+      } else {
+        // Item ID exists but no partial details
+        sources.push({
+          itemId: itemId,
+          itemName: 'Item #' + itemId
+        });
+      }
+    });
+  } catch (error) {
+    logWithTimestamp('Error getting reduction sources: ' + error.toString());
+  }
+  
+  return sources;
+}
+
+/**
+ * Formats reduction sources for display
+ * @param {Array<Object>} sources - Array of reduction source objects
+ * @return {string} Formatted string of reduction sources
+ */
+function formatReductionSources(sources) {
+  if (!sources || sources.length === 0) {
+    return 'Not available';
+  }
+  
+  return sources.map(function(source) {
+    return source.itemName;
+  }).join(', ');
 }
 

@@ -18,7 +18,8 @@
  * Creates a custom menu in the Google Sheets menu bar.
  * 
  * Note: This only works in the bound spreadsheet, not when used as a library.
- * Library users should create their own onOpen() if needed.
+ * Library users should copy code from LIBRARY_TEMPLATE.gs (which is excluded
+ * from clasp push via .claspignore to prevent conflicts).
  */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
@@ -313,23 +314,40 @@ function lookupItemInfo(itemName) {
     // Get vendor information (pass garlandData to avoid duplicate API call)
     const vendors = getVendorInfo(itemId, garlandData);
     
+    // Get reduction sources (items this can be reduced from)
+    const reductionSources = getReductionSources(garlandData);
+    
     // Determine if item can be bought and get best price
     const canBeBought = vendors && vendors.length > 0;
     let bestPrice = null;
     let bestPriceVendor = null;
     
     if (canBeBought) {
-      // Find the lowest price (assuming Gil currency)
+      // Prioritize Gil vendors, but also consider special currency vendors
       const gilVendors = vendors.filter(function(v) {
         return v.currency === 'Gil' && v.price > 0;
       });
       
       if (gilVendors.length > 0) {
+        // Find best Gil price
         gilVendors.sort(function(a, b) {
           return a.price - b.price;
         });
         bestPrice = gilVendors[0].price;
         bestPriceVendor = gilVendors[0];
+      } else {
+        // If no Gil vendors, use first available vendor (special currency)
+        // Sort by price to get the cheapest option
+        const sortedVendors = vendors.filter(function(v) {
+          return v.price > 0;
+        }).sort(function(a, b) {
+          return a.price - b.price;
+        });
+        
+        if (sortedVendors.length > 0) {
+          bestPrice = sortedVendors[0].price;
+          bestPriceVendor = sortedVendors[0];
+        }
       }
     }
     
@@ -339,13 +357,15 @@ function lookupItemInfo(itemName) {
       itemId: itemId,
       gatheringLocations: gatheringLocations,
       vendors: vendors,
+      reductionSources: reductionSources,
       canBeBought: canBeBought,
       bestPrice: bestPrice,
       bestPriceVendor: bestPriceVendor,
       formattedGathering: formatGatheringLocations(gatheringLocations),
       formattedVendors: formatVendorInfo(vendors),
+      formattedReductionSources: formatReductionSources(reductionSources),
       priceSummary: canBeBought && bestPrice ? 
-        'Can be bought for ' + bestPrice + ' Gil' + 
+        'Can be bought for ' + bestPrice + ' ' + (bestPriceVendor.currency || 'Gil') + 
         (bestPriceVendor.npcName ? ' from ' + bestPriceVendor.npcName : '') : 
         'Cannot be bought from vendors'
     };
@@ -363,7 +383,11 @@ function lookupItemInfo(itemName) {
  * PUBLIC API: Processes a list of items from a spreadsheet column
  * 
  * Reads item names from a spreadsheet column and looks up information for each item.
- * Writes results (gathering locations and vendor info) to adjacent columns.
+ * Writes results to adjacent columns:
+ * - Column B: Gathering locations
+ * - Column C: Price (best price if buyable, or "Cannot be bought")
+ * - Column D: Vendor information (vendor names and locations)
+ * - Column E: Aetherial Reduction (items this can be obtained by reducing)
  * 
  * When used as library: LibraryName.processItemList(sheetName, itemColumn, startRow)
  * 
@@ -406,14 +430,18 @@ function processItemList(sheetName, itemColumn, startRow) {
     
     logWithTimestamp('Processing ' + itemNames.length + ' items');
     
-    // Setup output columns (B = Gathering, C = Vendors)
+    // Setup output columns (B = Gathering, C = Price, D = Vendors, E = Reduced From)
     const gatheringCol = String.fromCharCode(column.charCodeAt(0) + 1);
-    const vendorCol = String.fromCharCode(column.charCodeAt(0) + 2);
+    const priceCol = String.fromCharCode(column.charCodeAt(0) + 2);
+    const vendorCol = String.fromCharCode(column.charCodeAt(0) + 3);
+    const reductionCol = String.fromCharCode(column.charCodeAt(0) + 4);
     
     // Write headers if not present
     if (start === 2) {
       sheet.getRange(gatheringCol + '1').setValue('Gathering Location');
+      sheet.getRange(priceCol + '1').setValue('Price');
       sheet.getRange(vendorCol + '1').setValue('Vendor Info');
+      sheet.getRange(reductionCol + '1').setValue('Aetherial Reduction');
     }
     
     const results = [];
@@ -427,13 +455,22 @@ function processItemList(sheetName, itemColumn, startRow) {
         
         const itemInfo = lookupItemInfo(item.name);
         
-        // Write results to spreadsheet - prioritize price in vendor column
+        // Write results to spreadsheet - separate price and vendor info
         sheet.getRange(gatheringCol + item.row).setValue(itemInfo.formattedGathering);
-        // Show price summary first, then full vendor info if available
-        const vendorDisplay = itemInfo.canBeBought && itemInfo.bestPrice ? 
-          itemInfo.priceSummary + (itemInfo.vendors.length > 1 ? ' | ' + itemInfo.formattedVendors : '') :
-          itemInfo.formattedVendors;
-        sheet.getRange(vendorCol + item.row).setValue(vendorDisplay);
+        
+        // Price column - show price with currency
+        let priceDisplay = 'Cannot be bought';
+        if (itemInfo.canBeBought && itemInfo.bestPrice) {
+          const currency = itemInfo.bestPriceVendor ? itemInfo.bestPriceVendor.currency || 'Gil' : 'Gil';
+          priceDisplay = itemInfo.bestPrice + ' ' + currency;
+        }
+        sheet.getRange(priceCol + item.row).setValue(priceDisplay);
+        
+        // Vendor column - show vendor details
+        sheet.getRange(vendorCol + item.row).setValue(itemInfo.formattedVendors);
+        
+        // Reduction column - show items this can be reduced from
+        sheet.getRange(reductionCol + item.row).setValue(itemInfo.formattedReductionSources);
         
         results.push(itemInfo);
         
@@ -445,7 +482,9 @@ function processItemList(sheetName, itemColumn, startRow) {
         logWithTimestamp('Error processing item "' + item.name + '": ' + error.toString());
         // Write error to cells
         sheet.getRange(gatheringCol + item.row).setValue('Error: ' + error.toString());
+        sheet.getRange(priceCol + item.row).setValue('Error');
         sheet.getRange(vendorCol + item.row).setValue('Error');
+        sheet.getRange(reductionCol + item.row).setValue('Error');
       }
     }
     

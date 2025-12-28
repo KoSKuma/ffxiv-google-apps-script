@@ -6,7 +6,7 @@
  * 
  * Usage:
  * 1. Push code: clasp push
- * 2. Open Apps Script editor: clasp open
+ * 2. Open Apps Script editor: clasp open-script
  * 3. Select a test function from the dropdown
  * 4. Click Run
  * 5. Check logs: View → Logs or clasp logs

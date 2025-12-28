@@ -11,7 +11,8 @@ clasp create --type sheets --title "Your Project Name"
 # Daily workflow
 clasp push          # Upload local changes to Apps Script
 clasp pull          # Download changes from Apps Script
-clasp open          # Open in Apps Script editor (browser)
+clasp open-script   # Open in Apps Script editor (browser)
+clasp open-container # Open container-bound script (browser)
 clasp logs          # View execution logs
 ```
 
@@ -42,7 +43,7 @@ clasp logs          # View execution logs
 ## File Locations
 
 - **Local files**: Your computer (in this project folder)
-- **Apps Script files**: Google Cloud (accessed via `clasp open` or browser)
+- **Apps Script files**: Google Cloud (accessed via `clasp open-script` or browser)
 - **`.clasp.json`**: Links local ↔ Apps Script (DO NOT commit to Git)
 
 ## Testing Your Script
@@ -90,7 +91,7 @@ clasp logs          # View execution logs
 | "No .clasp.json found" | Run `clasp create` or `clasp clone` |
 | Changes not appearing | Run `clasp push` and refresh sheet |
 | Permission denied | Run `clasp login` again |
-| Can't find Script ID | Run `clasp open` to see URL |
+| Can't find Script ID | Run `clasp open-script` to see URL |
 
 ## Key Differences from Direct Editing
 

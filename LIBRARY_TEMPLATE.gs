@@ -1,13 +1,25 @@
 /**
  * FFXIV Tools Library Integration - Copy-Paste Template
  * 
- * SETUP INSTRUCTIONS:
+ * ⚠️ NOTE: This file is EXCLUDED from clasp push (see .claspignore).
+ * It is a REFERENCE TEMPLATE for library users only.
+ * 
+ * When using this project as a STANDALONE script (bound to spreadsheet),
+ * use Code.gs instead. This template is only for users who want to use
+ * the project as a LIBRARY in their own spreadsheets.
+ * 
+ * SETUP INSTRUCTIONS (For Library Users):
  * 1. Add the library using the Script ID (see GETTING_STARTED.md)
- * 2. Replace 'FFXIVTools' below with your actual library identifier
+ * 2. Copy the code below into your spreadsheet's Apps Script editor
+ * 3. Replace 'FFXIVTools' below with your actual library identifier
  *    (Find it in the Libraries panel - left sidebar in Apps Script editor)
- * 3. Customize the menu items and functions as needed
- * 4. Save the script (Ctrl+S or Cmd+S)
- * 5. Refresh your spreadsheet - the menu will appear automatically
+ * 4. Customize the menu items and functions as needed
+ * 5. Save the script (Ctrl+S or Cmd+S)
+ * 6. Refresh your spreadsheet - the menu will appear automatically
+ * 
+ * AVAILABLE LIBRARY FUNCTIONS:
+ * - lookupItemInfo(itemName) - Look up FFXIV item information (gathering, vendors, prices)
+ * - processItemList(sheetName, itemColumn, startRow) - Process a list of items from spreadsheet
  */
 
 // IMPORTANT: Replace 'FFXIVTools' with your actual library identifier
@@ -22,128 +34,80 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   
   ui.createMenu('FFXIV Tools')
-    .addItem('Add Timestamp', 'menuAddTimestamp')
-    .addItem('Hello World', 'menuHelloWorld')
-    .addItem('Read Active Cell', 'menuReadActiveCell')
-    .addSeparator()
-    .addItem('Process Data', 'menuProcessData')
-    .addItem('Process Data from Another Sheet', 'menuProcessOtherSheet')
-    .addItem('Get Data from Another Sheet', 'menuGetData')
+    .addItem('Lookup Item Info', 'menuLookupItemInfo')
+    .addItem('Process Item List', 'menuProcessItemList')
     .addToUi();
 }
 
 /**
- * Menu handler: Adds timestamp to cell A1
+ * Menu handler: Lookup single item information
  */
-function menuAddTimestamp() {
+function menuLookupItemInfo() {
   try {
-    // Replace FFXIVTools with your library identifier
-    FFXIVTools.addTimestamp();
-  } catch (error) {
-    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
-    Logger.log('Error in menuAddTimestamp: ' + error.toString());
-  }
-}
-
-/**
- * Menu handler: Writes "Hello World" to active cell
- */
-function menuHelloWorld() {
-  try {
-    // Replace FFXIVTools with your library identifier
-    FFXIVTools.helloWorld();
-  } catch (error) {
-    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
-    Logger.log('Error in menuHelloWorld: ' + error.toString());
-  }
-}
-
-/**
- * Menu handler: Reads value from active cell
- */
-function menuReadActiveCell() {
-  try {
-    // Replace FFXIVTools with your library identifier
-    FFXIVTools.readActiveCell();
-    // Value is already shown in alert by the library function
-  } catch (error) {
-    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
-    Logger.log('Error in menuReadActiveCell: ' + error.toString());
-  }
-}
-
-/**
- * Menu handler: Processes data from active sheet
- * 
- * Customize the sheet name and range as needed
- */
-function menuProcessData() {
-  try {
-    const sheetName = SpreadsheetApp.getActiveSheet().getName();
-    const range = 'A1:B10'; // Customize this range as needed
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.prompt('Lookup Item Info', 'Enter item name:', ui.ButtonSet.OK_CANCEL);
     
-    // Replace FFXIVTools with your library identifier
-    const result = FFXIVTools.processData(sheetName, range);
-    SpreadsheetApp.getUi().alert('Processed ' + result.length + ' rows successfully!');
-  } catch (error) {
-    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
-    Logger.log('Error in menuProcessData: ' + error.toString());
-  }
-}
-
-/**
- * Menu handler: Processes data from another spreadsheet
- * 
- * CUSTOMIZE: Replace 'YOUR_SPREADSHEET_ID_HERE' with actual spreadsheet ID
- * Get the ID from the spreadsheet URL: 
- * https://docs.google.com/spreadsheets/d/[SPREADSHEET_ID]/edit
- */
-function menuProcessOtherSheet() {
-  try {
-    // CUSTOMIZE: Replace with your spreadsheet ID
-    const spreadsheetId = 'YOUR_SPREADSHEET_ID_HERE';
-    const sheetName = 'Data'; // Customize sheet name
-    const range = 'A1:B10'; // Customize range
-    
-    if (spreadsheetId === 'YOUR_SPREADSHEET_ID_HERE') {
-      SpreadsheetApp.getUi().alert('Please set the spreadsheetId in the menuProcessOtherSheet function!');
-      return;
+    if (response.getSelectedButton() === ui.Button.OK) {
+      const itemName = response.getResponseText().trim();
+      
+      if (itemName === '') {
+        ui.alert('Item name cannot be empty');
+        return;
+      }
+      
+      // Replace FFXIVTools with your library identifier
+      const itemInfo = FFXIVTools.lookupItemInfo(itemName);
+      
+      // Display results - prioritize price information
+      let message = 'Item: ' + itemInfo.itemName + '\n\n';
+      
+      // Show price first if item can be bought
+      if (itemInfo.canBeBought) {
+        message += '💰 PRICE: ' + itemInfo.priceSummary + '\n\n';
+        if (itemInfo.vendors && itemInfo.vendors.length > 1) {
+          message += 'All Vendors:\n' + itemInfo.formattedVendors + '\n\n';
+        }
+      } else {
+        message += '💰 PRICE: ' + itemInfo.priceSummary + '\n\n';
+      }
+      
+      message += 'Gathering Locations:\n' + itemInfo.formattedGathering;
+      
+      ui.alert('Item Information', message, ui.ButtonSet.OK);
     }
-    
-    // Replace FFXIVTools with your library identifier
-    const result = FFXIVTools.processDataFromSpreadsheet(spreadsheetId, sheetName, range);
-    SpreadsheetApp.getUi().alert('Processed ' + result.length + ' rows from external spreadsheet!');
   } catch (error) {
     SpreadsheetApp.getUi().alert('Error: ' + error.toString());
-    Logger.log('Error in menuProcessOtherSheet: ' + error.toString());
+    Logger.log('Error in menuLookupItemInfo: ' + error.toString());
   }
 }
 
 /**
- * Menu handler: Gets data from another spreadsheet
- * 
- * CUSTOMIZE: Replace 'YOUR_SPREADSHEET_ID_HERE' with actual spreadsheet ID
- * Get the ID from the spreadsheet URL: 
- * https://docs.google.com/spreadsheets/d/[SPREADSHEET_ID]/edit
+ * Menu handler: Process item list from spreadsheet
  */
-function menuGetData() {
+function menuProcessItemList() {
   try {
-    // CUSTOMIZE: Replace with your spreadsheet ID
-    const spreadsheetId = 'YOUR_SPREADSHEET_ID_HERE';
-    const sheetName = 'Main'; // Customize sheet name
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.prompt('Process Item List', 
+      'Enter column letter (e.g., A) and starting row (e.g., 2)\nFormat: Column,Row (default: A,2)', 
+      ui.ButtonSet.OK_CANCEL);
     
-    if (spreadsheetId === 'YOUR_SPREADSHEET_ID_HERE') {
-      SpreadsheetApp.getUi().alert('Please set the spreadsheetId in the menuGetData function!');
-      return;
+    if (response.getSelectedButton() === ui.Button.OK) {
+      const input = response.getResponseText().trim();
+      let column = 'A';
+      let startRow = 2;
+      
+      if (input !== '') {
+        const parts = input.split(',');
+        if (parts.length >= 1) column = parts[0].trim().toUpperCase();
+        if (parts.length >= 2) startRow = parseInt(parts[1].trim()) || 2;
+      }
+      
+      // Replace FFXIVTools with your library identifier
+      FFXIVTools.processItemList(null, column, startRow);
     }
-    
-    // Replace FFXIVTools with your library identifier
-    const data = FFXIVTools.getDataFromSpreadsheet(spreadsheetId, sheetName);
-    SpreadsheetApp.getUi().alert('Retrieved ' + data.length + ' rows from spreadsheet!');
-    Logger.log('Data preview: ' + JSON.stringify(data.slice(0, 3))); // Log first 3 rows
   } catch (error) {
     SpreadsheetApp.getUi().alert('Error: ' + error.toString());
-    Logger.log('Error in menuGetData: ' + error.toString());
+    Logger.log('Error in menuProcessItemList: ' + error.toString());
   }
 }
 

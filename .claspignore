@@ -1,0 +1,18 @@
+# Files to exclude from clasp push
+# These files are kept locally but not synced to Google Apps Script
+
+# Library template - this is for reference only, not for execution
+# Users copy this code into their own spreadsheets when using as a library
+# Excluded to prevent conflicts with Code.gs's onOpen() function
+LIBRARY_TEMPLATE.gs
+
+# Documentation files (not needed in Apps Script)
+*.md
+
+# Configuration files
+.clasp.json
+.claspignore
+.gitignore
+
+# Test files (optional - uncomment if you don't want Test.gs pushed)
+# Test.gs

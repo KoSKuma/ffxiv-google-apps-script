@@ -48,7 +48,7 @@ You have two options:
 4. **Find your new spreadsheet:**
    - The spreadsheet is automatically created and bound to your script
    - You can find it in your [Google Drive](https://drive.google.com)
-   - Or run `clasp open` to open the Apps Script editor, then click "Open Spreadsheet" in the menu
+   - Or run `clasp open-script-script` to open the Apps Script editor, then click "Open Spreadsheet" in the menu
    - The spreadsheet name will be the same as your project title
 
 #### Option B: Create Spreadsheet First, Then Clone Script (Alternative)
@@ -213,7 +213,7 @@ clasp push
 clasp pull
 
 # Open project in Apps Script editor (browser)
-clasp open
+clasp open-script
 
 # View execution logs
 clasp logs
@@ -243,7 +243,7 @@ clasp deploy
 ### Can't find Script ID
 - Open Apps Script editor
 - Script ID is in the URL: `https://script.google.com/home/projects/[SCRIPT_ID]/edit`
-- Or run `clasp open` to see the URL
+- Or run `clasp open-script` to see the URL
 
 ### Library Permission Issues
 - **"You do not have permission to call the service"**
@@ -302,7 +302,7 @@ You can deploy your script as a library and use it in multiple spreadsheets. The
 #### Deploying the Library
 
 1. **Share the Apps Script project:**
-   - Open your Apps Script project (`clasp open`)
+   - Open your Apps Script project (`clasp open-script`)
    - Click the **Share** button (top right)
    - Add the email addresses of users who will use the library
    - Set permission to **Viewer** (they don't need Editor access)
@@ -388,6 +388,8 @@ function onOpen() {
 #### Copy-Paste Template for New Spreadsheets
 
 A complete, ready-to-use code template is available in **[LIBRARY_TEMPLATE.gs](LIBRARY_TEMPLATE.gs)**.
+
+**Note:** `LIBRARY_TEMPLATE.gs` is excluded from `clasp push` (via `.claspignore`) to prevent conflicts with `Code.gs`'s `onOpen()` function. This file is kept in the repository for reference only - library users copy its contents into their own spreadsheets.
 
 **Quick Setup:**
 

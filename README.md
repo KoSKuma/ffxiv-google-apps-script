@@ -38,7 +38,9 @@ Google Apps Script project for Google Sheets automation and functionality.
 
 5. **Open in Apps Script editor**
    ```bash
-   clasp open
+   clasp open-script
+   # or
+   clasp open-container
    ```
 
 ## Project Structure
@@ -52,7 +54,8 @@ Google Apps Script project for Google Sheets automation and functionality.
 ├── Config.gs           # Internal configuration constants
 ├── FFXIVAPI.gs         # Internal FFXIV API integration
 ├── Test.gs             # Test functions (safe to keep)
-├── LIBRARY_TEMPLATE.gs # Copy-paste template for library users
+├── LIBRARY_TEMPLATE.gs # Copy-paste template for library users (excluded from push)
+├── .claspignore        # Files excluded from clasp push
 ├── README.md           # This file
 ├── GETTING_STARTED.md  # Step-by-step guide for beginners
 ├── FEATURE.md          # Feature documentation and tracking
@@ -96,7 +99,7 @@ Google Apps Script project for Google Sheets automation and functionality.
 
 - `clasp push` - Push local changes to Apps Script
 - `clasp pull` - Pull changes from Apps Script
-- `clasp open` - Open project in Apps Script editor
+- `clasp open-script` or `clasp open-container` - Open project in Apps Script editor
 - `clasp logs` - View execution logs
 - `clasp deploy` - Deploy as web app or add-on
 - `clasp versions` - List versions

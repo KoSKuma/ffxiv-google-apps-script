@@ -203,7 +203,7 @@ The following functions only work in the bound spreadsheet (not when used as a l
 
 Runs automatically when the spreadsheet is opened. Creates custom menu items in the Google Sheets menu bar.
 
-**Note:** When using as a library, copy the menu code from `LIBRARY_TEMPLATE.gs` to your spreadsheet's script editor.
+**Note:** When using as a library, copy the menu code from `LIBRARY_TEMPLATE.gs` (in the root directory) to your spreadsheet's script editor.
 
 ---
 
@@ -262,4 +262,4 @@ When adding new public API functions:
 - `FEATURE.md` - Feature documentation with detailed usage examples
 - `API_DOCUMENTATION.md` - External API endpoints reference
 - `GETTING_STARTED.md` - Setup and usage guide
-- `LIBRARY_TEMPLATE.gs` - Template code for library integration
+- `../LIBRARY_TEMPLATE.gs` - Template code for library integration (in root directory)

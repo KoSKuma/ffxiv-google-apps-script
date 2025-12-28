@@ -57,35 +57,46 @@ Google Apps Script project for Google Sheets automation and functionality.
 ├── LIBRARY_TEMPLATE.gs # Copy-paste template for library users (excluded from push)
 ├── .claspignore        # Files excluded from clasp push
 ├── README.md           # This file
-├── GETTING_STARTED.md  # Step-by-step guide for beginners
-├── FEATURE.md          # Feature documentation and tracking
-├── API_DOCUMENTATION.md # External API documentation (XIVAPI, etc.)
-├── NON_WORKING_APIS.md  # Non-functional APIs to avoid
-├── TODO.md             # Task tracking and roadmap
-├── ARCHITECTURE.md     # Project architecture
-├── DEVELOPMENT.md      # Development guide
-├── API.md              # Internal API documentation
-├── CONTRIBUTING.md     # Contributing guidelines
-├── PROMPTS.md          # AI development prompts
-├── SHEETS_FORMULAS.md  # Useful Google Sheets formulas and commands
 ├── CHANGELOG.md        # Project changelog
+├── LICENSE             # License file
+├── docs/               # Documentation
+│   ├── GETTING_STARTED.md  # Step-by-step guide for beginners
+│   ├── QUICK_REFERENCE.md  # Quick reference guide
+│   ├── FEATURE.md          # Feature documentation and tracking
+│   ├── API.md              # Internal API documentation
+│   ├── API_DOCUMENTATION.md # External API documentation (XIVAPI, etc.)
+│   ├── ARCHITECTURE.md     # Project architecture
+│   ├── DEVELOPMENT.md      # Development guide
+│   ├── CONTRIBUTING.md     # Contributing guidelines
+│   ├── PROMPTS.md          # AI development prompts
+│   ├── SHEETS_FORMULAS.md  # Useful Google Sheets formulas and commands
+│   ├── NON_WORKING_APIS.md # Non-functional APIs to avoid
+│   └── TODO.md             # Task tracking and roadmap
 └── releases/           # Detailed release notes
     └── v1.0.0.md       # Release notes for v1.0.0
 ```
 
 ## Documentation
 
-- **[GETTING_STARTED.md](GETTING_STARTED.md)** - ⭐ **Start here!** Step-by-step guide for using clasp with local development
-- **[FEATURE.md](FEATURE.md)** - Feature documentation - what's available and how features work
-- **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - External API documentation (XIVAPI endpoints and usage)
-- **[NON_WORKING_APIS.md](NON_WORKING_APIS.md)** - Non-functional APIs to avoid (prevents accidental reuse)
-- **[TODO.md](TODO.md)** - Task tracking, roadmap, and progress
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Project architecture and design patterns
-- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development workflow and best practices
-- **[API.md](API.md)** - Internal API reference for all functions
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Code style and contribution guidelines
-- **[PROMPTS.md](PROMPTS.md)** - Context and prompts for AI-assisted development
-- **[SHEETS_FORMULAS.md](SHEETS_FORMULAS.md)** - Useful Google Sheets formulas and commands
+### Getting Started
+- **[GETTING_STARTED.md](docs/GETTING_STARTED.md)** - ⭐ **Start here!** Step-by-step guide for using clasp with local development
+- **[QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md)** - Quick reference guide for common commands
+
+### Features & API
+- **[FEATURE.md](docs/FEATURE.md)** - Feature documentation - what's available and how features work
+- **[API.md](docs/API.md)** - Internal API reference for all functions
+- **[API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)** - External API documentation (XIVAPI endpoints and usage)
+- **[SHEETS_FORMULAS.md](docs/SHEETS_FORMULAS.md)** - Useful Google Sheets formulas and commands
+
+### Development
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Project architecture and design patterns
+- **[DEVELOPMENT.md](docs/DEVELOPMENT.md)** - Development workflow and best practices
+- **[CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Code style and contribution guidelines
+- **[PROMPTS.md](docs/PROMPTS.md)** - Context and prompts for AI-assisted development
+
+### Reference
+- **[NON_WORKING_APIS.md](docs/NON_WORKING_APIS.md)** - Non-functional APIs to avoid (prevents accidental reuse)
+- **[TODO.md](docs/TODO.md)** - Task tracking, roadmap, and progress
 - **[CHANGELOG.md](CHANGELOG.md)** - Project changelog and release history
 
 ## Development Workflow

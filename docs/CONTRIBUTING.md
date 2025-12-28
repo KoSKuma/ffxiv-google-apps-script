@@ -112,7 +112,7 @@ Types:
 - Update relevant `.md` files when adding features
 - Add function documentation to `API.md`
 - Update `ARCHITECTURE.md` for structural changes
-- Keep `README.md` up to date
+- Keep `../README.md` up to date
 
 ## Questions?
 

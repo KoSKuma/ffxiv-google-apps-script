@@ -15,6 +15,12 @@
 - `Test.gs` - Test functions (kept in production for debugging)
 - `LIBRARY_TEMPLATE.gs` - Template code for library users (excluded from push)
 
+**Documentation Structure:**
+- `README.md` - Main project readme (root)
+- `CHANGELOG.md` - Project changelog (root)
+- `docs/` - All documentation files (GETTING_STARTED.md, FEATURE.md, API.md, etc.)
+- `releases/` - Detailed release notes (releases/v1.0.0.md, etc.)
+
 ## Code Style
 - Follow JavaScript ES5/ES6 best practices (Apps Script supports modern JS)
 - Use `const` and `let` instead of `var` when possible
@@ -94,8 +100,8 @@
   - Use `date +"%Y"` to get current year
   - Use `date +"%Y-%m-%d %H:%M:%S"` for full date and time
 - **Date accuracy**: Never assume or guess dates - always verify the current date when:
-  - Adding "Last Updated" dates to features in `FEATURE.md`
-  - Adding completion dates to tasks in `TODO.md`
+  - Adding "Last Updated" dates to features in `docs/FEATURE.md`
+  - Adding completion dates to tasks in `docs/TODO.md`
   - Creating new documentation entries with dates
   - Updating version information with dates
 - **Date format**: Use ISO 8601 format (YYYY-MM-DD) for all dates in documentation
@@ -121,37 +127,37 @@ If the user asks to "check", "review", "verify", or "is this up to date" for any
 ### Documentation Files to Update
 
 **When adding new functions:**
-- Update `API.md` with function documentation (if public API)
-- Update `FEATURE.md` if it's a new feature
+- Update `docs/API.md` with function documentation (if public API)
+- Update `docs/FEATURE.md` if it's a new feature
 
 **When adding new features:**
-- Update `FEATURE.md` with complete feature documentation
-- Update `ARCHITECTURE.md` with module information
-- Update `API.md` if adding public API functions
-- Update `TODO.md` to track progress
+- Update `docs/FEATURE.md` with complete feature documentation
+- Update `docs/ARCHITECTURE.md` with module information
+- Update `docs/API.md` if adding public API functions
+- Update `docs/TODO.md` to track progress
 
 **When changing workflows:**
-- Update `DEVELOPMENT.md` with new processes
+- Update `docs/DEVELOPMENT.md` with new processes
 
 **When modifying code style:**
-- Update `CONTRIBUTING.md` and `.cursorrules`
+- Update `docs/CONTRIBUTING.md` and `.cursorrules`
 
 **When adding new patterns:**
-- Update `PROMPTS.md` with examples
+- Update `docs/PROMPTS.md` with examples
 
 **General maintenance:**
 - Keep `README.md` up to date with project structure and setup instructions
 
-### Feature Documentation (FEATURE.md)
-Update `FEATURE.md` when making any changes to features:
-- **Adding a new feature**: Add complete documentation using the feature template in `FEATURE.md`
+### Feature Documentation (docs/FEATURE.md)
+Update `docs/FEATURE.md` when making any changes to features:
+- **Adding a new feature**: Add complete documentation using the feature template in `docs/FEATURE.md`
 - **Modifying an existing feature**: Update the feature's documentation (parameters, behavior, examples)
 - **Removing/deprecating a feature**: Mark as ❌ Deprecated and move to appropriate section
 - **Changing feature status**: Update status indicator (✅ Implemented, 🟡 In Progress, 🧪 Debug/Utility, ⬜ Planned)
 - **Required information**: Include function signature, parameters, return values, usage examples, how it works, and any notes
 
-### Task Tracking (TODO.md)
-Update `TODO.md` when completing tasks, adding new features, or identifying work items:
+### Task Tracking (docs/TODO.md)
+Update `docs/TODO.md` when completing tasks, adding new features, or identifying work items:
 - Mark completed tasks as ✅ and move to "Completed Tasks" section
 - Add new tasks to appropriate sections (Current Sprint, Planned Features, Technical Debt, etc.)
 - Update task status (⬜ Not Started, 🟡 In Progress, ✅ Completed, ❌ Cancelled)

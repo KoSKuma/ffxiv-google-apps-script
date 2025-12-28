@@ -382,7 +382,7 @@ function menuProcessCraftingRequest() {
 
 #### Copy-Paste Template for New Spreadsheets
 
-A complete, ready-to-use code template is available in **[LIBRARY_TEMPLATE.gs](LIBRARY_TEMPLATE.gs)**.
+A complete, ready-to-use code template is available in **[LIBRARY_TEMPLATE.gs](../LIBRARY_TEMPLATE.gs)**.
 
 **Note:** `LIBRARY_TEMPLATE.gs` is excluded from `clasp push` (via `.claspignore`) to prevent conflicts with `Code.gs`'s `onOpen()` function. This file is kept in the repository for reference only - library users copy its contents into their own spreadsheets.
 
@@ -391,7 +391,7 @@ A complete, ready-to-use code template is available in **[LIBRARY_TEMPLATE.gs](L
 1. **Add the library** (see steps above in "Deploy as a Library" section)
 
 2. **Copy the template:**
-   - Open `LIBRARY_TEMPLATE.gs` in this repository
+   - Open `LIBRARY_TEMPLATE.gs` in this repository (root directory)
    - Copy all the code
 
 3. **Paste into your spreadsheet's Apps Script editor:**

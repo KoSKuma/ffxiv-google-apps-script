@@ -67,7 +67,10 @@ Google Apps Script project for Google Sheets automation and functionality.
 ├── API.md              # Internal API documentation
 ├── CONTRIBUTING.md     # Contributing guidelines
 ├── PROMPTS.md          # AI development prompts
-└── SHEETS_FORMULAS.md  # Useful Google Sheets formulas and commands
+├── SHEETS_FORMULAS.md  # Useful Google Sheets formulas and commands
+├── CHANGELOG.md        # Project changelog
+└── releases/           # Detailed release notes
+    └── v1.0.0.md       # Release notes for v1.0.0
 ```
 
 ## Documentation
@@ -83,6 +86,7 @@ Google Apps Script project for Google Sheets automation and functionality.
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Code style and contribution guidelines
 - **[PROMPTS.md](PROMPTS.md)** - Context and prompts for AI-assisted development
 - **[SHEETS_FORMULAS.md](SHEETS_FORMULAS.md)** - Useful Google Sheets formulas and commands
+- **[CHANGELOG.md](CHANGELOG.md)** - Project changelog and release history
 
 ## Development Workflow
 

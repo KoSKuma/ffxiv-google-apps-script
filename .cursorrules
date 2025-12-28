@@ -1,0 +1,82 @@
+# Google Apps Script Development Rules
+
+## Project Structure
+- Use `.gs` extension for Google Apps Script files
+- Use `.html` extension for HTML dialog/sidebar files
+- Organize code into logical modules (one file per module/feature)
+- Keep main entry points in `Code.gs` or `Main.gs`
+- Use descriptive file names that reflect their purpose
+
+## Code Style
+- Follow JavaScript ES5/ES6 best practices (Apps Script supports modern JS)
+- Use `const` and `let` instead of `var` when possible
+- Use arrow functions where appropriate
+- Prefer async/await over callbacks for asynchronous operations
+- Use JSDoc comments for function documentation
+- Keep functions focused and single-purpose
+- Use meaningful variable and function names
+
+## Google Apps Script Specific
+- Always handle errors with try-catch blocks
+- Use `SpreadsheetApp.getActiveSpreadsheet()` for active spreadsheet operations
+- Cache frequently accessed data (ranges, values) to improve performance
+- Use batch operations (getValues/setValues) instead of cell-by-cell operations
+- Be mindful of execution time limits (6 minutes for regular scripts)
+- Use triggers appropriately (onEdit, onOpen, time-driven, etc.)
+- Always request minimal necessary permissions
+
+## Best Practices
+- Separate business logic from UI code
+- Use configuration objects for settings instead of hardcoding values
+- Implement proper error handling and logging
+- Use `Logger.log()` for debugging (remove before production)
+- Consider using `console.log()` for better debugging experience
+- Document API calls and external dependencies
+- Use meaningful constants for magic numbers and strings
+- Implement input validation for user-facing functions
+
+## File Organization
+- Keep utility functions in separate files (e.g., `Utils.gs`, `Helpers.gs`)
+- Group related functions together
+- Use namespaces or object literals to organize related code
+- Keep HTML templates in separate `.html` files
+
+## Testing
+- Create test functions for critical logic
+- Use descriptive test function names (e.g., `testCalculateTotal`)
+- Comment out or remove test code before deployment
+
+## Deployment
+- Never commit sensitive data (API keys, tokens, etc.)
+- Use Script Properties for configuration that shouldn't be in code
+- Document deployment steps in README
+- Version your code appropriately
+
+## Performance
+- Minimize calls to SpreadsheetApp methods (cache results)
+- Use batch operations whenever possible
+- Avoid nested loops when working with large datasets
+- Consider using Apps Script's built-in array methods (map, filter, reduce)
+
+## Security
+- Validate all user inputs
+- Sanitize data before writing to sheets
+- Use appropriate permission scopes
+- Never log sensitive information
+
+## Documentation Maintenance
+- **CRITICAL**: Update markdown documentation files when making significant changes
+- When adding new functions: Update `API.md` with function documentation
+- When adding new features: Update `ARCHITECTURE.md` with module information
+- When changing workflows: Update `DEVELOPMENT.md` with new processes
+- When modifying code style: Update `CONTRIBUTING.md` and `.cursorrules`
+- When adding new patterns: Update `PROMPTS.md` with examples
+- Keep `README.md` up to date with project structure and setup instructions
+- **Task Tracking**: Update `TODO.md` when completing tasks, adding new features, or identifying work items
+  - Mark completed tasks as ✅ and move to "Completed Tasks" section
+  - Add new tasks to appropriate sections (Current Sprint, Planned Features, Technical Debt, etc.)
+  - Update task status (⬜ Not Started, 🟡 In Progress, ✅ Completed, ❌ Cancelled)
+- Documentation should reflect the current state of the codebase
+- If AI assistants are used, ensure they update relevant documentation files including `TODO.md`
+- Review documentation accuracy during code reviews
+

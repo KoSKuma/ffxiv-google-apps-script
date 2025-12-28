@@ -79,11 +79,17 @@
 - When modifying code style: Update `CONTRIBUTING.md` and `.cursorrules`
 - When adding new patterns: Update `PROMPTS.md` with examples
 - Keep `README.md` up to date with project structure and setup instructions
+- **Feature Documentation**: Update `FEATURE.md` when making any changes to features
+  - When adding a new feature: Add complete documentation using the feature template in `FEATURE.md`
+  - When modifying an existing feature: Update the feature's documentation (parameters, behavior, examples)
+  - When removing/deprecating a feature: Mark as ❌ Deprecated and move to appropriate section
+  - When changing feature status: Update status indicator (✅ Implemented, 🟡 In Progress, ⬜ Planned)
+  - Include: function signature, parameters, return values, usage examples, how it works, and any notes
 - **Task Tracking**: Update `TODO.md` when completing tasks, adding new features, or identifying work items
   - Mark completed tasks as ✅ and move to "Completed Tasks" section
   - Add new tasks to appropriate sections (Current Sprint, Planned Features, Technical Debt, etc.)
   - Update task status (⬜ Not Started, 🟡 In Progress, ✅ Completed, ❌ Cancelled)
 - Documentation should reflect the current state of the codebase
-- If AI assistants are used, ensure they update relevant documentation files including `TODO.md`
+- If AI assistants are used, ensure they update relevant documentation files including `TODO.md` and `FEATURE.md`
 - Review documentation accuracy during code reviews
 

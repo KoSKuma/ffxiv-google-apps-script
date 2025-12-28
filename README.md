@@ -53,6 +53,7 @@ Google Apps Script project for Google Sheets automation and functionality.
 ├── LIBRARY_TEMPLATE.gs # Copy-paste template for library users
 ├── README.md           # This file
 ├── GETTING_STARTED.md  # Step-by-step guide for beginners
+├── FEATURE.md          # Feature documentation and tracking
 ├── TODO.md             # Task tracking and roadmap
 ├── ARCHITECTURE.md     # Project architecture
 ├── DEVELOPMENT.md      # Development guide
@@ -64,6 +65,7 @@ Google Apps Script project for Google Sheets automation and functionality.
 ## Documentation
 
 - **[GETTING_STARTED.md](GETTING_STARTED.md)** - ⭐ **Start here!** Step-by-step guide for using clasp with local development
+- **[FEATURE.md](FEATURE.md)** - Feature documentation - what's available and how features work
 - **[TODO.md](TODO.md)** - Task tracking, roadmap, and progress
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Project architecture and design patterns
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development workflow and best practices

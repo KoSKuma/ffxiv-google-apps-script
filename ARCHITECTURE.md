@@ -64,7 +64,7 @@ This Google Apps Script project is designed to automate and enhance Google Sheet
 - **Internal Utilities**: `Utils.gs` functions used by public functions (not exposed)
 - **Internal Config**: `Config.gs` constants used by public functions (not exposed)
 - Library users only need to call public functions - all internals are handled automatically
-- Example: `LibraryName.processData(spreadsheetId)` uses CONFIG and Utils internally
+- Example: `LibraryName.lookupItemInfo(itemName)` uses CONFIG and Utils internally
 
 ### Configuration Pattern
 - All configuration values centralized in `Config.gs`
@@ -125,12 +125,16 @@ function myNewFunction(param1, param2) {
   // Uses CONFIG internally
   const sheetName = param2 || CONFIG.SHEET_NAMES.MAIN;
   
-  // Uses Utils internally
-  const sheet = getOrCreateSheet(sheetName);
-  const values = getSheetValues(sheet);
+  // Uses FFXIVAPI internally
+  const searchResult = searchItemByName(itemName);
+  const garlandData = getItemDetails(searchResult.ID);
   
   // Process and return
-  return processData(values);
+  return {
+    itemName: garlandData.item.name,
+    gatheringLocations: getGatheringLocations(garlandData),
+    vendors: getVendorInfo(searchResult.ID, garlandData)
+  };
 }
 ```
 

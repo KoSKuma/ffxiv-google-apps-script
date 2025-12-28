@@ -4,25 +4,8 @@ This document tracks all features available in the FFXIV Google Apps Script proj
 
 ## Table of Contents
 
-### 📝 Example Features (May be removed)
-
-**Note:** The following features are example/demo code to demonstrate the library architecture. They may be removed or replaced when actual FFXIV features are implemented.
-
-#### Basic Utilities (Examples)
-- [Add Timestamp](#-add-timestamp) - `addTimestamp()` ⚠️ Example
-- [Hello World](#-hello-world) - `helloWorld()` ⚠️ Example
-- [Read Active Cell](#-read-active-cell) - `readActiveCell()` ⚠️ Example
-
-#### Data Processing (Examples)
-- [Process Data](#-process-data) - `processData(sheetName, range)` ⚠️ Example
-- [Process Data from Another Spreadsheet](#-process-data-from-another-spreadsheet) - `processDataFromSpreadsheet(spreadsheetId, sheetName, range)` ⚠️ Example
-- [Get Data from Spreadsheet](#-get-data-from-spreadsheet) - `getDataFromSpreadsheet(spreadsheetId, sheetName)` ⚠️ Example
-
 ### ✅ Implemented Features
-_No production features implemented yet._
-
-### 🟡 In Progress Features
-- [Item Information Lookup (MVP)](#-item-information-lookup-mvp) - `lookupItemInfo(itemName)` / `processItemList(sheetName, itemColumn, startRow)`
+- [Item Information Lookup](#-item-information-lookup) - v1.0 (2025-12-28) - `lookupItemInfo(itemName)` / `processItemList(sheetName, itemColumn, startRow)`
 
 ### ⬜ Planned Features
 - [Item Information Lookup (Full)](#-item-information-lookup-full) - Full version with market board prices
@@ -38,193 +21,15 @@ _No production features implemented yet._
 
 ---
 
-## Example Features (May be Removed)
-
-**⚠️ Important:** The features below are example/demo code created to demonstrate the library architecture and development workflow. They serve as templates and may be removed or replaced when actual FFXIV-specific features are implemented.
-
-### Basic Utilities (Examples)
-
-#### ✅ Add Timestamp ⚠️ Example
-**Function:** `addTimestamp()`
-
-Adds a timestamp to cell A1 of the active sheet.
-
-**Usage:**
-- **As library:** `LibraryName.addTimestamp()`
-- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "Add Timestamp"
-
-**How it works:**
-- Gets the active sheet
-- Writes current timestamp to cell A1
-- Shows success alert to user
-
-**Example:**
-```javascript
-FFXIVTools.addTimestamp();
-// Result: Cell A1 contains "Last updated: [timestamp]"
-```
-
----
-
-#### ✅ Hello World ⚠️ Example
-**Function:** `helloWorld()`
-
-Writes "Hello World from Apps Script!" to the currently selected cell.
-
-**Usage:**
-- **As library:** `LibraryName.helloWorld()`
-- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "Hello World"
-
-**How it works:**
-- Gets the active cell
-- Writes "Hello World from Apps Script!" to that cell
-- Shows alert with cell address
-
-**Example:**
-```javascript
-FFXIVTools.helloWorld();
-// Result: Active cell contains "Hello World from Apps Script!"
-```
-
----
-
-#### ✅ Read Active Cell ⚠️ Example
-**Function:** `readActiveCell()`
-
-Reads and displays the value from the currently selected cell.
-
-**Usage:**
-- **As library:** `LibraryName.readActiveCell()`
-- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "Read Active Cell"
-
-**Returns:** `string` - The value in the active cell
-
-**How it works:**
-- Gets the active cell
-- Reads its value
-- Shows alert with cell address and value
-- Returns the value
-
-**Example:**
-```javascript
-const value = FFXIVTools.readActiveCell();
-// Shows alert: "Cell A1 contains: 'Hello'"
-// Returns: "Hello"
-```
-
----
-
-### Data Processing (Examples)
-
-#### ✅ Process Data ⚠️ Example
-**Function:** `processData(sheetName, range)`
-
-Processes data from the active sheet using internal utilities and config.
-
-**Parameters:**
-- `sheetName` (string, optional) - Sheet name (uses `CONFIG.SHEET_NAMES.MAIN` if not provided)
-- `range` (string, optional) - Data range (defaults to 'A1:B10')
-
-**Returns:** `Array<Array>` - Processed data array
-
-**Usage:**
-- **As library:** `LibraryName.processData(sheetName, range)`
-- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "Process Data"
-
-**How it works:**
-1. Gets or creates the specified sheet (uses internal `getOrCreateSheet()`)
-2. Reads data from the specified range
-3. Processes each row (adds a "Processed row X" column)
-4. Writes processed data back to the sheet
-5. Returns the processed data array
-
-**Example:**
-```javascript
-// Process data from active sheet, default range
-const result = FFXIVTools.processData();
-
-// Process data from specific sheet and range
-const result = FFXIVTools.processData('Data', 'A1:C20');
-// Result: Array of processed rows
-```
-
----
-
-#### ✅ Process Data from Another Spreadsheet ⚠️ Example
-**Function:** `processDataFromSpreadsheet(spreadsheetId, sheetName, range)`
-
-Processes data from any spreadsheet by ID.
-
-**Parameters:**
-- `spreadsheetId` (string, required) - The ID of the spreadsheet to process
-- `sheetName` (string, optional) - Sheet name (uses `CONFIG.SHEET_NAMES.MAIN` if not provided)
-- `range` (string, optional) - Data range (defaults to 'A1:B10')
-
-**Returns:** `Array<Array>` - Processed data array
-
-**Usage:**
-- **As library:** `LibraryName.processDataFromSpreadsheet(spreadsheetId, sheetName, range)`
-- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "Process Data from Another Sheet"
-
-**How it works:**
-1. Opens the spreadsheet by ID (uses internal `openSpreadsheetById()`)
-2. Gets the specified sheet
-3. Reads data from the specified range
-4. Processes each row
-5. Writes processed data back to the sheet
-6. Returns the processed data array
-
-**Example:**
-```javascript
-const spreadsheetId = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms';
-const result = FFXIVTools.processDataFromSpreadsheet(spreadsheetId, 'Data', 'A1:B10');
-// Result: Array of processed rows from external spreadsheet
-```
-
----
-
-#### ✅ Get Data from Spreadsheet ⚠️ Example
-**Function:** `getDataFromSpreadsheet(spreadsheetId, sheetName)`
-
-Retrieves data from any spreadsheet as a 2D array.
-
-**Parameters:**
-- `spreadsheetId` (string, required) - The ID of the spreadsheet
-- `sheetName` (string, optional) - Sheet name (uses `CONFIG.SHEET_NAMES.MAIN` if not provided)
-
-**Returns:** `Array<Array>` - 2D array of values from the sheet
-
-**Usage:**
-- **As library:** `LibraryName.getDataFromSpreadsheet(spreadsheetId, sheetName)`
-
-**How it works:**
-1. Opens the spreadsheet by ID (uses internal `openSpreadsheetById()`)
-2. Gets the specified sheet
-3. Reads all data using internal `getSheetValues()`
-4. Returns the data array
-
-**Example:**
-```javascript
-const spreadsheetId = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms';
-const data = FFXIVTools.getDataFromSpreadsheet(spreadsheetId, 'Main');
-// Result: [['Header1', 'Header2'], ['Value1', 'Value2'], ...]
-```
-
----
-
 ## Implemented Features
 
-_Production features will be listed here once implemented._
+### ✅ Item Information Lookup
 
----
-
-## In Progress Features
-
-### 🟡 Item Information Lookup (MVP)
-
+**Version:** 1.0  
+**Last Updated:** 2025-12-28  
 **Function:** `lookupItemInfo(itemName)` / `processItemList(sheetName, itemColumn, startRow)`
 
-Looks up FFXIV item information including gathering locations and vendor prices. This is the MVP version that focuses on gathering locations and vendor prices only.
+Looks up FFXIV item information including gathering locations, vendor prices, and aetherial reduction sources. Version 1.0 implementation.
 
 **Parameters:**
 - `itemName` (string, required) - Name of the item to look up (e.g., "Iron Ore")
@@ -249,31 +54,43 @@ Looks up FFXIV item information including gathering locations and vendor prices.
 6. For batch processing: reads item names from spreadsheet column and processes each one
 
 **Data Sources:**
-- **XIVAPI** (https://xivapi.com/) - Primary API for item data, gathering locations, and vendor information
-- Additional APIs may be used as needed
+- **XIVAPI v2** (https://v2.xivapi.com/api) - Item name to ID conversion
+- **Garland Tools** (https://www.garlandtools.org/) - Detailed item information, gathering nodes, vendors, and reduction sources
 
 **Output Structure:**
 ```javascript
 {
   itemName: "Iron Ore",
-  itemId: 4,
+  itemId: 5111,
   gatheringLocations: [
     {
       type: "Mining",
-      zone: "Central Thanalan",
-      node: "Mineral Deposit",
-      level: 5,
-      coordinates: "x, y"
+      name: "Horizon's Edge",
+      level: 15,
+      zone: 42
     }
   ],
   vendors: [
     {
-      npcName: "Merchant",
-      location: "Limsa Lominsa",
-      price: 5,
+      npcName: "Material Supplier",
+      location: "Various",
+      price: 18,
       currency: "Gil"
     }
-  ]
+  ],
+  reductionSources: [
+    {
+      itemId: 46249,
+      itemName: "Purple Palate"
+    }
+  ],
+  canBeBought: true,
+  bestPrice: 18,
+  bestPriceVendor: {...},
+  formattedGathering: "Mining - Horizon's Edge - Level 15",
+  formattedVendors: "Material Supplier - 18 Gil (Various)",
+  formattedReductionSources: "Purple Palate, Calamus Root, Levin Quartz",
+  priceSummary: "Can be bought for 18 Gil from Material Supplier"
 }
 ```
 
@@ -288,18 +105,28 @@ FFXIVTools.processItemList('Items', 'A', 2);
 // Reads items from column A starting at row 2, processes each, writes results
 ```
 
-**MVP Scope:**
-- ✅ Item name lookup via XIVAPI
-- ✅ Gathering location information
-- ✅ Vendor/NPC purchase information
-- ✅ Batch processing from spreadsheet
-- ❌ Market board prices (future feature)
+**Features:**
+- ✅ Item name lookup via XIVAPI v2 search
+- ✅ Gathering location information (node names, levels, types)
+- ✅ Vendor/NPC purchase information (Gil and special currencies)
+- ✅ Aetherial reduction sources (items that can be reduced to obtain this item)
+- ✅ Price prioritization (shows best price first)
+- ✅ Vendor deduplication (removes duplicate vendor entries)
+- ✅ Batch processing from spreadsheet (writes to multiple columns)
+- ❌ Market board prices (planned for future version)
+
+**Spreadsheet Output Columns:**
+- Column B: Gathering Locations
+- Column C: Price (with currency)
+- Column D: Vendor Info
+- Column E: Aetherial Reduction
 
 **Notes:**
-- Requires internet connection to call XIVAPI
-- API rate limits may apply - batch processing includes delays
-- Item names must match exactly or use fuzzy matching
+- Requires internet connection to call XIVAPI and Garland Tools APIs
+- API rate limits apply - batch processing includes 1 second delays between items
+- Item names must match exactly (case-sensitive)
 - Results are written to spreadsheet columns next to item names
+- Supports both Gil purchases and special currency purchases (scrips, credits, etc.)
 
 ---
 
@@ -368,6 +195,9 @@ When adding a new feature, use this template:
 
 ```markdown
 #### ✅ Feature Name
+
+**Version:** X.Y  
+**Last Updated:** YYYY-MM-DD  
 **Function:** `functionName(param1, param2)`
 
 Brief description of what the feature does.

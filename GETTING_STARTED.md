@@ -258,7 +258,7 @@ clasp deploy
 - **"Cannot access internal utilities/config"**
   - This is expected! Utilities (`Utils.gs`) and config (`Config.gs`) are internal
   - Use the public functions in `Code.gs` instead - they use utilities and config automatically
-  - Example: Instead of `LibraryName.CONFIG`, use `LibraryName.processData()` which uses config internally
+  - Example: Instead of `LibraryName.CONFIG`, use `LibraryName.lookupItemInfo()` which uses config internally
 
 ## Using Your Script with Other Spreadsheets
 
@@ -339,48 +339,33 @@ You can deploy your script as a library and use it in multiple spreadsheets. The
 The library exposes **high-level public functions** from `Code.gs`. Internal utilities (`Utils.gs`) and configuration (`Config.gs`) are used automatically and are not directly accessible.
 
 **Available Public Functions:**
-- `addTimestamp()` - Adds timestamp to cell A1
-- `helloWorld()` - Writes "Hello World" to active cell
-- `readActiveCell()` - Reads value from active cell
-- `processData(sheetName, range)` - Processes data from active sheet
-- `processDataFromSpreadsheet(spreadsheetId, sheetName, range)` - Processes data from any spreadsheet
-- `getDataFromSpreadsheet(spreadsheetId, sheetName)` - Gets data from any spreadsheet
+- `lookupItemInfo(itemName)` - Looks up FFXIV item information (gathering, vendors, prices)
+- `processItemList(sheetName, itemColumn, startRow)` - Processes a list of items from spreadsheet
 
 **Example Usage:**
 
 ```javascript
 // In the target spreadsheet's Apps Script editor
 
-// Simple function call
-function testLibrary() {
+// Lookup single item
+function lookupItem() {
   // Replace 'FFXIVTools' with your library identifier
-  FFXIVTools.addTimestamp();
+  const itemInfo = FFXIVTools.lookupItemInfo('Iron Ore');
+  Logger.log('Item: ' + itemInfo.itemName);
+  Logger.log('Price: ' + itemInfo.priceSummary);
 }
 
-// Process data from the active sheet
-function processMyData() {
-  FFXIVTools.processData('Main', 'A1:B10');
-}
-
-// Process data from another spreadsheet
-function processOtherSheet() {
-  const spreadsheetId = 'YOUR_SPREADSHEET_ID_HERE';
-  FFXIVTools.processDataFromSpreadsheet(spreadsheetId, 'Data', 'A1:B10');
-}
-
-// Get data from another spreadsheet
-function getData() {
-  const spreadsheetId = 'YOUR_SPREADSHEET_ID_HERE';
-  const data = FFXIVTools.getDataFromSpreadsheet(spreadsheetId, 'Main');
-  Logger.log('Got ' + data.length + ' rows');
+// Process item list from spreadsheet
+function processItems() {
+  FFXIVTools.processItemList(null, 'A', 2);
 }
 
 // Create menu that uses library
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu('My Tools')
-    .addItem('Add Timestamp', 'testLibrary')
-    .addItem('Process Data', 'processMyData')
+  ui.createMenu('FFXIV Tools')
+    .addItem('Lookup Item Info', 'lookupItem')
+    .addItem('Process Item List', 'processItems')
     .addToUi();
 }
 ```
@@ -492,14 +477,14 @@ This project uses a **library-friendly architecture** (Option 4 - Hybrid Approac
 ### Example Flow
 ```javascript
 // Library user calls:
-FFXIVTools.processData('Main', 'A1:B10');
+FFXIVTools.lookupItemInfo('Iron Ore');
 
 // Internally, the function:
-// 1. Uses CONFIG.SHEET_NAMES.MAIN (from Config.gs)
-// 2. Calls getOrCreateSheet() (from Utils.gs)
-// 3. Calls getSheetValues() (from Utils.gs)
-// 4. Processes the data
-// 5. Returns result
+// 1. Uses searchItemByName() (from FFXIVAPI.gs)
+// 2. Calls getItemDetails() (from FFXIVAPI.gs)
+// 3. Calls getGatheringLocations() (from FFXIVAPI.gs)
+// 4. Calls getVendorInfo() (from FFXIVAPI.gs)
+// 5. Returns structured item information
 ```
 
 This architecture means:

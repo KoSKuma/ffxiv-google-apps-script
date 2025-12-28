@@ -34,80 +34,27 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   
   ui.createMenu('FFXIV Tools')
-    .addItem('Lookup Item Info', 'menuLookupItemInfo')
-    .addItem('Process Item List', 'menuProcessItemList')
+    .addItem('Obtain Material Information', 'menuObtainMaterialInfo')
     .addToUi();
 }
 
 /**
- * Menu handler: Lookup single item information
+ * Menu handler: Obtain material information
+ * 
+ * Processes items from the "Material Info" sheet starting at column A, row 2.
+ * This is the main production workflow for obtaining material information.
  */
-function menuLookupItemInfo() {
+function menuObtainMaterialInfo() {
   try {
-    const ui = SpreadsheetApp.getUi();
-    const response = ui.prompt('Lookup Item Info', 'Enter item name:', ui.ButtonSet.OK_CANCEL);
+    const sheetName = 'Material Info';
+    const column = 'A';
+    const startRow = 2;
     
-    if (response.getSelectedButton() === ui.Button.OK) {
-      const itemName = response.getResponseText().trim();
-      
-      if (itemName === '') {
-        ui.alert('Item name cannot be empty');
-        return;
-      }
-      
-      // Replace FFXIVTools with your library identifier
-      const itemInfo = FFXIVTools.lookupItemInfo(itemName);
-      
-      // Display results - prioritize price information
-      let message = 'Item: ' + itemInfo.itemName + '\n\n';
-      
-      // Show price first if item can be bought
-      if (itemInfo.canBeBought) {
-        message += '💰 PRICE: ' + itemInfo.priceSummary + '\n\n';
-        if (itemInfo.vendors && itemInfo.vendors.length > 1) {
-          message += 'All Vendors:\n' + itemInfo.formattedVendors + '\n\n';
-        }
-      } else {
-        message += '💰 PRICE: ' + itemInfo.priceSummary + '\n\n';
-      }
-      
-      message += 'Gathering Locations:\n' + itemInfo.formattedGathering;
-      
-      ui.alert('Item Information', message, ui.ButtonSet.OK);
-    }
+    // Replace FFXIVTools with your library identifier
+    FFXIVTools.processItemList(sheetName, column, startRow);
   } catch (error) {
     SpreadsheetApp.getUi().alert('Error: ' + error.toString());
-    Logger.log('Error in menuLookupItemInfo: ' + error.toString());
-  }
-}
-
-/**
- * Menu handler: Process item list from spreadsheet
- */
-function menuProcessItemList() {
-  try {
-    const ui = SpreadsheetApp.getUi();
-    const response = ui.prompt('Process Item List', 
-      'Enter column letter (e.g., A) and starting row (e.g., 2)\nFormat: Column,Row (default: A,2)', 
-      ui.ButtonSet.OK_CANCEL);
-    
-    if (response.getSelectedButton() === ui.Button.OK) {
-      const input = response.getResponseText().trim();
-      let column = 'A';
-      let startRow = 2;
-      
-      if (input !== '') {
-        const parts = input.split(',');
-        if (parts.length >= 1) column = parts[0].trim().toUpperCase();
-        if (parts.length >= 2) startRow = parseInt(parts[1].trim()) || 2;
-      }
-      
-      // Replace FFXIVTools with your library identifier
-      FFXIVTools.processItemList(null, column, startRow);
-    }
-  } catch (error) {
-    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
-    Logger.log('Error in menuProcessItemList: ' + error.toString());
+    Logger.log('Error in menuObtainMaterialInfo: ' + error.toString());
   }
 }
 

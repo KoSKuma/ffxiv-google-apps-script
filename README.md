@@ -47,9 +47,10 @@ Google Apps Script project for Google Sheets automation and functionality.
 .
 ├── appsscript.json      # Apps Script manifest
 ├── .clasp.json         # clasp configuration (gitignored)
-├── Code.gs             # Main entry point
-├── Utils.gs            # Utility functions
-├── Config.gs           # Configuration constants
+├── Code.gs             # Main entry point (public API)
+├── Utils.gs            # Internal utility functions
+├── Config.gs           # Internal configuration constants
+├── LIBRARY_TEMPLATE.gs # Copy-paste template for library users
 ├── README.md           # This file
 ├── GETTING_STARTED.md  # Step-by-step guide for beginners
 ├── TODO.md             # Task tracking and roadmap

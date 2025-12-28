@@ -245,6 +245,21 @@ clasp deploy
 - Script ID is in the URL: `https://script.google.com/home/projects/[SCRIPT_ID]/edit`
 - Or run `clasp open` to see the URL
 
+### Library Permission Issues
+- **"You do not have permission to call the service"**
+  - Solution: Share the Apps Script project with the user (Share button in Apps Script editor)
+  - Set permission to "Viewer" (not Editor)
+  
+- **"Script function not found"**
+  - Solution: Make sure functions are public (not starting with `_`)
+  - Solution: Use correct syntax: `LibraryName.functionName()` (check the identifier in Libraries panel)
+  - Solution: Make sure you've authorized the library (first-time use requires authorization)
+  
+- **"Cannot access internal utilities/config"**
+  - This is expected! Utilities (`Utils.gs`) and config (`Config.gs`) are internal
+  - Use the public functions in `Code.gs` instead - they use utilities and config automatically
+  - Example: Instead of `LibraryName.CONFIG`, use `LibraryName.processData()` which uses config internally
+
 ## Using Your Script with Other Spreadsheets
 
 **Yes, you can use your Apps Script with other spreadsheets!** Here are your options:
@@ -282,12 +297,141 @@ function workWithSheetByUrl() {
 
 ### Option 2: Deploy as a Library
 
-You can deploy your script as a library and use it in multiple spreadsheets:
+You can deploy your script as a library and use it in multiple spreadsheets. The project uses a **library-friendly architecture** where high-level functions are exposed while utilities and config remain internal.
 
-1. In Apps Script editor, go to `Deploy` → `New deployment`
-2. Select `Library` as the type
-3. Other spreadsheets can then add your script as a library
-4. Access functions via `LibraryName.functionName()`
+#### Deploying the Library
+
+1. **Share the Apps Script project:**
+   - Open your Apps Script project (`clasp open`)
+   - Click the **Share** button (top right)
+   - Add the email addresses of users who will use the library
+   - Set permission to **Viewer** (they don't need Editor access)
+   - Click **Send**
+
+2. **Deploy as Library:**
+   - In Apps Script editor, go to `Deploy` → `New deployment`
+   - Click the gear icon (⚙️) next to "Select type"
+   - Select **Library** as the type
+   - Set description (optional)
+   - Choose version: **New version** (or specific version)
+   - Click **Deploy**
+   - **Copy the Script ID** shown (you'll need this)
+
+3. **Add Library to Target Spreadsheet:**
+   - Open the spreadsheet where you want to use the library
+   - Go to `Extensions` → `Apps Script`
+   - Click the **+ (Libraries)** icon on the left sidebar
+   - Paste the Script ID from step 2
+   - Click **Look up**
+   - Select version (usually **Head** for latest)
+   - Set identifier (e.g., `FFXIVTools`) - this is how you'll call it
+   - Click **Add**
+
+4. **Authorize the Library:**
+   - When you first use the library, you'll be prompted to authorize
+   - Click **Review permissions**
+   - Select your Google account
+   - Click **Advanced** → **Go to [Your Project Name] (unsafe)** if shown
+   - Click **Allow**
+
+#### Using the Library
+
+The library exposes **high-level public functions** from `Code.gs`. Internal utilities (`Utils.gs`) and configuration (`Config.gs`) are used automatically and are not directly accessible.
+
+**Available Public Functions:**
+- `addTimestamp()` - Adds timestamp to cell A1
+- `helloWorld()` - Writes "Hello World" to active cell
+- `readActiveCell()` - Reads value from active cell
+- `processData(sheetName, range)` - Processes data from active sheet
+- `processDataFromSpreadsheet(spreadsheetId, sheetName, range)` - Processes data from any spreadsheet
+- `getDataFromSpreadsheet(spreadsheetId, sheetName)` - Gets data from any spreadsheet
+
+**Example Usage:**
+
+```javascript
+// In the target spreadsheet's Apps Script editor
+
+// Simple function call
+function testLibrary() {
+  // Replace 'FFXIVTools' with your library identifier
+  FFXIVTools.addTimestamp();
+}
+
+// Process data from the active sheet
+function processMyData() {
+  FFXIVTools.processData('Main', 'A1:B10');
+}
+
+// Process data from another spreadsheet
+function processOtherSheet() {
+  const spreadsheetId = 'YOUR_SPREADSHEET_ID_HERE';
+  FFXIVTools.processDataFromSpreadsheet(spreadsheetId, 'Data', 'A1:B10');
+}
+
+// Get data from another spreadsheet
+function getData() {
+  const spreadsheetId = 'YOUR_SPREADSHEET_ID_HERE';
+  const data = FFXIVTools.getDataFromSpreadsheet(spreadsheetId, 'Main');
+  Logger.log('Got ' + data.length + ' rows');
+}
+
+// Create menu that uses library
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu('My Tools')
+    .addItem('Add Timestamp', 'testLibrary')
+    .addItem('Process Data', 'processMyData')
+    .addToUi();
+}
+```
+
+#### Copy-Paste Template for New Spreadsheets
+
+A complete, ready-to-use code template is available in **[LIBRARY_TEMPLATE.gs](LIBRARY_TEMPLATE.gs)**.
+
+**Quick Setup:**
+
+1. **Add the library** (see steps above in "Deploy as a Library" section)
+
+2. **Copy the template:**
+   - Open `LIBRARY_TEMPLATE.gs` in this repository
+   - Copy all the code
+
+3. **Paste into your spreadsheet's Apps Script editor:**
+   - Open your target spreadsheet
+   - Go to `Extensions` → `Apps Script`
+   - Paste the code
+   - Replace `FFXIVTools` with your actual library identifier (found in Libraries panel)
+   - Customize spreadsheet IDs, sheet names, and ranges as needed
+   - Save (Ctrl+S or Cmd+S)
+
+4. **Refresh your spreadsheet** - the menu will appear automatically!
+
+**Customization Tips:**
+- Change `LIBRARY_NAME` or replace `FFXIVTools` with your actual library identifier
+- Modify menu items by editing the `.addItem()` calls
+- Customize spreadsheet IDs, sheet names, and ranges in the functions
+- Add or remove menu items as needed
+- The menu appears automatically when you open the spreadsheet
+
+**Important Notes:**
+- ✅ **Public functions** in `Code.gs` are accessible: `LibraryName.functionName()`
+- ❌ **Internal utilities** (`Utils.gs`) are NOT accessible directly
+- ❌ **Configuration** (`Config.gs`) is NOT accessible directly
+- ✅ Public functions use utilities and config **automatically** internally
+- ✅ All functions are self-contained and handle everything internally
+- ✅ Functions work with any spreadsheet (not just the bound one)
+
+**Library Architecture:**
+```
+Public API (Code.gs)
+  ↓ uses internally
+Internal Utilities (Utils.gs)
+  ↓ uses internally  
+Internal Config (Config.gs)
+```
+
+This means library users only need to call high-level functions - all the complexity is handled internally!
 
 ### Option 3: Create a Standalone Script
 
@@ -308,7 +452,9 @@ Then use `openById()` or `openByUrl()` to access any spreadsheet you need.
 | `onOpen()` trigger | ✅ Works | ❌ Only works in bound sheet |
 | Deploy as Library | ✅ Works | ✅ Works in all sheets using it |
 
-**Recommendation**: For most use cases, using `openById()` or `openByUrl()` is the simplest way to work with multiple spreadsheets from one script.
+**Recommendation**: 
+- **For library distribution**: Use Option 2 (Deploy as Library) - best for sharing functionality across multiple spreadsheets
+- **For single script with multiple sheets**: Use Option 1 (`openById()`/`openByUrl()`) - simpler for one script accessing multiple sheets
 
 ## Best Practices
 
@@ -318,11 +464,52 @@ Then use `openById()` or `openByUrl()` to access any spreadsheet you need.
 4. **Commit regularly** - Use Git to track your changes
 5. **Test thoroughly** - Test in Google Sheets after each push
 6. **Store spreadsheet IDs in Config.gs** - If working with multiple sheets, keep IDs in your config
+7. **Library design**: Keep public functions high-level and self-contained - they should use internal utilities and config automatically
+8. **Document public API**: All functions in `Code.gs` are public - document them clearly for library users
+
+## Understanding the Library Architecture
+
+This project uses a **library-friendly architecture** (Option 4 - Hybrid Approach):
+
+### Public API (Code.gs)
+- All functions in `Code.gs` are **public** and exposed when used as a library
+- Functions are high-level and self-contained
+- Users call: `LibraryName.functionName()`
+- Functions automatically use internal utilities and config
+
+### Internal Utilities (Utils.gs)
+- Utility functions are **internal** and not directly accessible
+- Used by public functions automatically
+- Library users don't need to access these directly
+
+### Internal Config (Config.gs)
+- Configuration constants are **internal** and not directly accessible
+- Used by public functions automatically
+- Public functions use config values automatically
+
+### Example Flow
+```javascript
+// Library user calls:
+FFXIVTools.processData('Main', 'A1:B10');
+
+// Internally, the function:
+// 1. Uses CONFIG.SHEET_NAMES.MAIN (from Config.gs)
+// 2. Calls getOrCreateSheet() (from Utils.gs)
+// 3. Calls getSheetValues() (from Utils.gs)
+// 4. Processes the data
+// 5. Returns result
+```
+
+This architecture means:
+- ✅ Library users get simple, high-level functions
+- ✅ Internal complexity is hidden
+- ✅ Utilities and config are automatically used
+- ✅ Easy to maintain and extend
 
 ## Next Steps
 
-- Check out the example in `Code.gs` for a simple working script
+- Check out the example functions in `Code.gs` - all are public API
 - Read `DEVELOPMENT.md` for more advanced workflows
-- See `ARCHITECTURE.md` for project structure
-- Review `API.md` for function documentation
+- See `ARCHITECTURE.md` for detailed project structure and library design patterns
+- Review `API.md` for complete function documentation
 

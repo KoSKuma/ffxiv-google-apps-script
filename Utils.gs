@@ -1,5 +1,9 @@
 /**
- * Utility functions for the FFXIV Google Apps Script project
+ * Internal utility functions for the FFXIV Google Apps Script project
+ * 
+ * NOTE: These functions are INTERNAL and not exposed when used as a library.
+ * They are used by public functions in Code.gs.
+ * Library users should use the high-level functions in Code.gs instead.
  */
 
 /**

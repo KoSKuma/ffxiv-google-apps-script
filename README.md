@@ -51,6 +51,7 @@ Google Apps Script project for Google Sheets automation and functionality.
 ├── Utils.gs            # Utility functions
 ├── Config.gs           # Configuration constants
 ├── README.md           # This file
+├── GETTING_STARTED.md  # Step-by-step guide for beginners
 ├── TODO.md             # Task tracking and roadmap
 ├── ARCHITECTURE.md     # Project architecture
 ├── DEVELOPMENT.md      # Development guide
@@ -61,6 +62,7 @@ Google Apps Script project for Google Sheets automation and functionality.
 
 ## Documentation
 
+- **[GETTING_STARTED.md](GETTING_STARTED.md)** - ⭐ **Start here!** Step-by-step guide for using clasp with local development
 - **[TODO.md](TODO.md)** - Task tracking, roadmap, and progress
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Project architecture and design patterns
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development workflow and best practices

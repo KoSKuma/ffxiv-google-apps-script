@@ -25,10 +25,12 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('FFXIV Tools')
     .addItem('Obtain Material Information', 'menuObtainMaterialInfo')
+    .addItem('Process Crafting Request', 'menuProcessCraftingRequest')
     .addSeparator()
     .addSubMenu(ui.createMenu('Debug')
       .addItem('Lookup Item Info', 'menuLookupItemInfo')
-      .addItem('Process Item List', 'menuProcessItemList'))
+      .addItem('Process Item List', 'menuProcessItemList')
+      .addItem('Get Crafting Materials', 'menuGetCraftingMaterials'))
     .addToUi();
 }
 
@@ -358,6 +360,365 @@ function menuObtainMaterialInfo() {
   } catch (error) {
     SpreadsheetApp.getUi().alert('Error: ' + error.toString());
     Logger.log('Error in menuObtainMaterialInfo: ' + error.toString());
+  }
+}
+
+// ============================================================================
+// Crafting Materials Features
+// ============================================================================
+
+/**
+ * PUBLIC API: Gets crafting materials needed to craft an item
+ * 
+ * Returns a list of all materials (including sub-ingredients) needed to craft
+ * a given item. Handles recursive crafting (ingredients that need to be crafted).
+ * 
+ * When used as library: LibraryName.getCraftingMaterials(itemName)
+ * 
+ * @param {string} itemName - Name of the item to get crafting materials for (e.g., "Ceviche")
+ * @param {boolean} includeSubIngredients - Whether to include sub-ingredients (default: true)
+ * @return {Object} Object containing crafting tree and flattened materials list
+ */
+function getCraftingMaterials(itemName, includeSubIngredients) {
+  try {
+    if (includeSubIngredients === undefined) includeSubIngredients = true;
+    
+    if (!itemName || itemName.trim() === '') {
+      throw new Error('Item name is required');
+    }
+    
+    logWithTimestamp('Getting crafting materials for: ' + itemName);
+    
+    // Search for item by name
+    let searchResult;
+    try {
+      searchResult = searchItemByName(itemName);
+    } catch (error) {
+      if (error.toString().includes('alive nodes') || error.toString().includes('Search Error')) {
+        throw new Error('XIVAPI search is currently unavailable. Please try again later.');
+      }
+      throw error;
+    }
+    
+    if (!searchResult) {
+      throw new Error('Item "' + itemName + '" not found. Please check the spelling.');
+    }
+    
+    const itemId = searchResult.ID;
+    logWithTimestamp('Found item ID: ' + itemId);
+    
+    // Get crafting tree
+    const tree = getCraftingTree(itemId, 0, 5, {});
+    
+    if (!tree) {
+      throw new Error('Could not retrieve crafting information for "' + itemName + '"');
+    }
+    
+    if (!tree.canBeCrafted) {
+      return {
+        itemName: tree.itemName,
+        itemId: tree.itemId,
+        canBeCrafted: false,
+        message: 'This item cannot be crafted.',
+        tree: tree,
+        materials: []
+      };
+    }
+    
+    // Flatten the tree to get all materials needed
+    let materials = [];
+    if (includeSubIngredients) {
+      const materialMap = flattenCraftingTree(tree, {});
+      // Create a map of itemId -> itemName from the tree for lookup
+      const itemNameMap = {};
+      function buildItemNameMap(t) {
+        if (t && t.itemId) {
+          itemNameMap[t.itemId] = t.itemName;
+        }
+        if (t && t.ingredients) {
+          t.ingredients.forEach(function(ing) {
+            itemNameMap[ing.itemId] = ing.itemName;
+            if (ing.subTree) {
+              buildItemNameMap(ing.subTree);
+            }
+          });
+        }
+      }
+      buildItemNameMap(tree);
+      
+      materials = Object.keys(materialMap).map(function(itemId) {
+        const id = parseInt(itemId);
+        return {
+          itemId: id,
+          itemName: itemNameMap[id] || 'Item #' + itemId,
+          amount: materialMap[itemId]
+        };
+      });
+    } else {
+      // Just return direct ingredients
+      materials = tree.ingredients.map(function(ingredient) {
+        return {
+          itemId: ingredient.itemId,
+          itemName: ingredient.itemName,
+          amount: ingredient.amount
+        };
+      });
+    }
+    
+    // Format for display
+    const formattedTree = formatCraftingTree(tree, 0);
+    const formattedMaterials = materials.map(function(m) {
+      return m.amount + 'x ' + m.itemName;
+    }).join(', ');
+    
+    return {
+      itemName: tree.itemName,
+      itemId: tree.itemId,
+      canBeCrafted: true,
+      tree: tree,
+      materials: materials,
+      formattedTree: formattedTree,
+      formattedMaterials: formattedMaterials
+    };
+  } catch (error) {
+    logWithTimestamp('Error in getCraftingMaterials: ' + error.toString());
+    throw error;
+  }
+}
+
+/**
+ * Menu handler: Get crafting materials for an item
+ */
+function menuGetCraftingMaterials() {
+  try {
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.prompt('Get Crafting Materials', 'Enter item name:', ui.ButtonSet.OK_CANCEL);
+    
+    if (response.getSelectedButton() === ui.Button.OK) {
+      const itemName = response.getResponseText().trim();
+      
+      if (itemName === '') {
+        ui.alert('Item name cannot be empty');
+        return;
+      }
+      
+      const result = getCraftingMaterials(itemName, true);
+      
+      if (!result.canBeCrafted) {
+        ui.alert('Crafting Information', result.message, ui.ButtonSet.OK);
+        return;
+      }
+      
+      // Display results
+      let message = 'Crafting Materials for: ' + result.itemName + '\n\n';
+      message += 'Materials Needed:\n' + result.formattedMaterials + '\n\n';
+      message += 'Crafting Tree:\n' + result.formattedTree;
+      
+      ui.alert('Crafting Materials', message, ui.ButtonSet.OK);
+    }
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
+    Logger.log('Error in menuGetCraftingMaterials: ' + error.toString());
+  }
+}
+
+/**
+ * PUBLIC API: Processes crafting requests from spreadsheet
+ * 
+ * Reads item names and quantities from "Requested for Crafting" sheet:
+ * - Column A: Item names
+ * - Column B: Quantity to craft
+ * 
+ * Writes materials needed to columns C and D:
+ * - Column C: Material names (one per line)
+ * - Column D: Total quantity needed (material quantity × column B)
+ * 
+ * Inserts rows for materials and adds padding blank lines between items.
+ * 
+ * When used as library: LibraryName.processCraftingRequest()
+ * 
+ * @param {string} [sheetName] - Sheet name (defaults to "Requested for Crafting")
+ * @param {string} [itemColumn] - Column letter for item names (defaults to 'A')
+ * @param {string} [quantityColumn] - Column letter for quantities (defaults to 'B')
+ * @param {number} [startRow] - Starting row number (defaults to 2, assuming row 1 is header)
+ * @return {Array<Object>} Array of processing results
+ */
+function processCraftingRequest(sheetName, itemColumn, quantityColumn, startRow) {
+  try {
+    const targetSheetName = sheetName || 'Requested for Crafting';
+    const itemCol = itemColumn || 'A';
+    const qtyCol = quantityColumn || 'B';
+    const start = startRow || 2;
+    
+    // Get or create sheet
+    const sheet = getOrCreateSheet(targetSheetName);
+    
+    // Write headers if not present
+    if (start === 2) {
+      sheet.getRange('A1').setValue('Item Name');
+      sheet.getRange('B1').setValue('Quantity');
+      sheet.getRange('C1').setValue('Material Name');
+      sheet.getRange('D1').setValue('Material Quantity');
+    }
+    
+    // Read items and quantities
+    const lastRow = sheet.getLastRow();
+    if (lastRow < start) {
+      SpreadsheetApp.getUi().alert('No items found in sheet "' + targetSheetName + '" starting at row ' + start);
+      return [];
+    }
+    
+    const items = [];
+    for (let row = start; row <= lastRow; row++) {
+      const itemName = sheet.getRange(itemCol + row).getValue();
+      const quantity = sheet.getRange(qtyCol + row).getValue();
+      
+      if (itemName && itemName.toString().trim() !== '') {
+        const qty = parseFloat(quantity) || 1;
+        items.push({
+          row: row,
+          name: itemName.toString().trim(),
+          quantity: qty
+        });
+      }
+    }
+    
+    if (items.length === 0) {
+      SpreadsheetApp.getUi().alert('No items found in column ' + itemCol);
+      return [];
+    }
+    
+    logWithTimestamp('Processing ' + items.length + ' crafting requests');
+    
+    const results = [];
+    
+    // Process items in reverse order to avoid row shifting issues
+    // When we insert rows, it won't affect items we haven't processed yet
+    for (let i = items.length - 1; i >= 0; i--) {
+      const item = items[i];
+      const itemRow = item.row;
+      
+      try {
+        logWithTimestamp('Processing item ' + (i + 1) + '/' + items.length + ': ' + item.name + ' x' + item.quantity);
+        
+        // Get crafting materials
+        const materialsResult = getCraftingMaterials(item.name, true);
+        
+        if (!materialsResult.canBeCrafted) {
+          // Item cannot be crafted - write error message
+          sheet.getRange('C' + itemRow).setValue('Cannot be crafted');
+          sheet.getRange('D' + itemRow).setValue('N/A');
+          results.push({
+            itemName: item.name,
+            quantity: item.quantity,
+            success: false,
+            error: materialsResult.message
+          });
+          
+          // Add padding line after error
+          sheet.insertRowAfter(itemRow);
+          
+          // Add delay to respect API rate limits
+          if (i > 0) {
+            Utilities.sleep(1000);
+          }
+          continue;
+        }
+        
+        // Get materials list
+        const materials = materialsResult.materials || [];
+        
+        if (materials.length === 0) {
+          sheet.getRange('C' + itemRow).setValue('No materials needed');
+          sheet.getRange('D' + itemRow).setValue('0');
+          results.push({
+            itemName: item.name,
+            quantity: item.quantity,
+            success: true,
+            materialsCount: 0
+          });
+          
+          // Add padding line
+          sheet.insertRowAfter(itemRow);
+          
+          if (i > 0) {
+            Utilities.sleep(1000);
+          }
+          continue;
+        }
+        
+        // Insert rows for materials (we need materials.length rows + 1 padding row)
+        const rowsToInsert = materials.length + 1; // +1 for padding blank line
+        for (let j = 0; j < rowsToInsert; j++) {
+          sheet.insertRowAfter(itemRow);
+        }
+        
+        // Write materials to column C and D
+        let materialRow = itemRow + 1;
+        materials.forEach(function(material) {
+          const totalQuantity = material.amount * item.quantity;
+          sheet.getRange('C' + materialRow).setValue(material.itemName);
+          sheet.getRange('D' + materialRow).setValue(totalQuantity);
+          materialRow++;
+        });
+        
+        // Add padding blank line (already inserted, just leave it blank)
+        // materialRow is now pointing to the padding line, which is already blank
+        
+        results.push({
+          itemName: item.name,
+          quantity: item.quantity,
+          success: true,
+          materialsCount: materials.length
+        });
+        
+        // Add delay to respect API rate limits
+        if (i > 0) {
+          Utilities.sleep(1000);
+        }
+      } catch (error) {
+        logWithTimestamp('Error processing item "' + item.name + '": ' + error.toString());
+        sheet.getRange('C' + itemRow).setValue('Error: ' + error.toString());
+        sheet.getRange('D' + itemRow).setValue('Error');
+        
+        results.push({
+          itemName: item.name,
+          quantity: item.quantity,
+          success: false,
+          error: error.toString()
+        });
+        
+        // Add padding line after error
+        sheet.insertRowAfter(itemRow);
+      }
+    }
+    
+    const successCount = results.filter(function(r) { return r.success; }).length;
+    logWithTimestamp('Processed ' + successCount + '/' + items.length + ' items successfully');
+    SpreadsheetApp.getUi().alert('Processed ' + successCount + '/' + items.length + ' crafting requests successfully!');
+    
+    return results;
+  } catch (error) {
+    logWithTimestamp('Error in processCraftingRequest: ' + error.toString());
+    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
+    throw error;
+  }
+}
+
+/**
+ * Menu handler: Process crafting requests from spreadsheet
+ * 
+ * Processes items from the "Requested for Crafting" sheet.
+ * This is the main production workflow for batch crafting material calculation.
+ */
+function menuProcessCraftingRequest() {
+  try {
+    const sheetName = 'Requested for Crafting';
+    logWithTimestamp('Processing crafting requests from sheet: ' + sheetName);
+    processCraftingRequest(sheetName);
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
+    Logger.log('Error in menuProcessCraftingRequest: ' + error.toString());
   }
 }
 

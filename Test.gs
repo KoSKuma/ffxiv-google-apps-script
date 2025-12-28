@@ -285,6 +285,90 @@ function testMultipleItems() {
 }
 
 /**
+ * Test: Get crafting materials for an item
+ * Tests the getCraftingMaterials function with recursive crafting
+ */
+function testGetCraftingMaterials() {
+  try {
+    Logger.log('=== Testing getCraftingMaterials ===');
+    
+    // Test with "Ceviche" - has nested crafting (Turali Corn Oil -> Turali Corn)
+    const itemName = 'Ceviche';
+    Logger.log('Getting crafting materials for: ' + itemName);
+    Logger.log('');
+    
+    const result = getCraftingMaterials(itemName, true);
+    
+    Logger.log('✅ Success!');
+    Logger.log('');
+    Logger.log('Item: ' + result.itemName);
+    Logger.log('Item ID: ' + result.itemId);
+    Logger.log('Can be crafted: ' + result.canBeCrafted);
+    Logger.log('');
+    
+    if (result.canBeCrafted) {
+      Logger.log('--- Flattened Materials List ---');
+      Logger.log('Total materials needed: ' + result.materials.length);
+      result.materials.forEach(function(material, index) {
+        Logger.log('  ' + (index + 1) + '. ' + material.amount + 'x ' + material.itemName + ' (ID: ' + material.itemId + ')');
+      });
+      
+      Logger.log('');
+      Logger.log('--- Formatted Materials ---');
+      Logger.log(result.formattedMaterials);
+      
+      Logger.log('');
+      Logger.log('--- Crafting Tree ---');
+      Logger.log(result.formattedTree);
+    } else {
+      Logger.log('Message: ' + result.message);
+    }
+    
+    Logger.log('');
+    Logger.log('=== Test Complete ===');
+  } catch (error) {
+    Logger.log('❌ Error: ' + error.toString());
+    Logger.log('Stack: ' + error.stack);
+  }
+}
+
+/**
+ * Test: Get crafting materials with direct ingredients only
+ * Tests getCraftingMaterials with includeSubIngredients = false
+ */
+function testGetCraftingMaterialsDirectOnly() {
+  try {
+    Logger.log('=== Testing getCraftingMaterials (Direct Only) ===');
+    
+    const itemName = 'Ceviche';
+    Logger.log('Getting direct ingredients only for: ' + itemName);
+    Logger.log('');
+    
+    const result = getCraftingMaterials(itemName, false);
+    
+    Logger.log('✅ Success!');
+    Logger.log('');
+    Logger.log('Item: ' + result.itemName);
+    Logger.log('Can be crafted: ' + result.canBeCrafted);
+    Logger.log('');
+    
+    if (result.canBeCrafted) {
+      Logger.log('--- Direct Ingredients Only ---');
+      Logger.log('Total direct ingredients: ' + result.materials.length);
+      result.materials.forEach(function(material, index) {
+        Logger.log('  ' + (index + 1) + '. ' + material.amount + 'x ' + material.itemName + ' (ID: ' + material.itemId + ')');
+      });
+    }
+    
+    Logger.log('');
+    Logger.log('=== Test Complete ===');
+  } catch (error) {
+    Logger.log('❌ Error: ' + error.toString());
+    Logger.log('Stack: ' + error.stack);
+  }
+}
+
+/**
  * Quick test menu
  * Creates a menu for easy test function access
  */
@@ -297,6 +381,9 @@ function onTestOpen() {
     .addSeparator()
     .addItem('Test Gathering Locations', 'testGatheringLocations')
     .addItem('Test Vendor Info', 'testVendorInfo')
+    .addSeparator()
+    .addItem('Test Crafting Materials', 'testGetCraftingMaterials')
+    .addItem('Test Crafting Materials (Direct Only)', 'testGetCraftingMaterialsDirectOnly')
     .addSeparator()
     .addItem('Test API Connectivity', 'testAPIConnectivity')
     .addItem('Test Multiple Items', 'testMultipleItems')

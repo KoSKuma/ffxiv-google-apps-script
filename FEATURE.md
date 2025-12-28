@@ -6,6 +6,10 @@ This document tracks all features available in the FFXIV Google Apps Script proj
 
 ### ✅ Implemented Features
 - [Item Information Lookup](#-item-information-lookup) - v1.0 (2025-12-28) - `lookupItemInfo(itemName)` / `processItemList(sheetName, itemColumn, startRow)`
+- [Crafting Request Processing](#-crafting-request-processing) - v1.0 (2025-12-28) - `processCraftingRequest(sheetName, itemColumn, quantityColumn, startRow)`
+
+### 🟡 In Progress Features
+- None currently
 
 ### ⬜ Planned Features
 - [Item Information Lookup (Full)](#-item-information-lookup-full) - Full version with market board prices
@@ -123,10 +127,264 @@ FFXIVTools.processItemList('Items', 'A', 2);
 
 **Notes:**
 - Requires internet connection to call XIVAPI and Garland Tools APIs
-- API rate limits apply - batch processing includes 1 second delays between items
+
+---
+
+### ✅ Crafting Request Processing
+
+**Version:** 1.0  
+**Last Updated:** 2025-12-28  
+**Function:** `processCraftingRequest(sheetName, itemColumn, quantityColumn, startRow)`
+
+Batch processes crafting requests from a spreadsheet. Reads item names and quantities, calculates all materials needed (including recursive sub-ingredients), and writes results to the spreadsheet with proper formatting and padding.
+
+**Parameters:**
+- `sheetName` (string, optional) - Sheet name (defaults to "Requested for Crafting")
+- `itemColumn` (string, optional) - Column letter for item names (defaults to 'A')
+- `quantityColumn` (string, optional) - Column letter for quantities (defaults to 'B')
+- `startRow` (number, optional) - Starting row number (defaults to 2, assuming row 1 is header)
+
+**Returns:** 
+- `Array<Object>` - Array of processing results with success status and material counts
+
+**Usage:**
+- **As library:** `LibraryName.processCraftingRequest()` or `LibraryName.processCraftingRequest('Requested for Crafting', 'A', 'B', 2)`
+- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "Process Crafting Request"
+
+**How it works:**
+1. Reads item names from column A and quantities from column B
+2. For each item, gets crafting materials (including recursive sub-ingredients)
+3. Calculates total material quantities (material amount × item quantity)
+4. Inserts rows for materials below each item
+5. Writes material names to column C and quantities to column D
+6. Adds padding blank line between items for readability
+
+**Data Sources:**
+- **XIVAPI v2** (https://v2.xivapi.com/api) - Item name to ID conversion
+- **Garland Tools** (https://www.garlandtools.org/) - Crafting recipes and ingredient information
+
+**Spreadsheet Structure:**
+- **Column A:** Item names (input)
+- **Column B:** Quantity to craft (input)
+- **Column C:** Material names (output, one per line)
+- **Column D:** Total material quantity needed (output, material amount × column B)
+
+**Example:**
+```
+Input:
+Row 1: Item Name | Quantity | Material Name | Material Quantity
+Row 2: Ceviche   | 3        |               |
+Row 3: Iron Ore   | 5        |               |
+
+Output after processing:
+Row 1: Item Name | Quantity | Material Name | Material Quantity
+Row 2: Ceviche   | 3        |               |
+Row 3:           |          | Cloudsail     | 3
+Row 4:           |          | Turali Corn   | 36
+Row 5:           |          | ...           | ...
+Row 6:           |          |               | (blank padding line)
+Row 7: Iron Ore  | 5        |               |
+Row 8:           |          | (materials)   | (quantities)
+```
+
+**Features:**
+- ✅ Batch processing of multiple items
+- ✅ Automatic quantity calculation (multiplies by item quantity)
+- ✅ Recursive crafting support (includes sub-ingredients)
+- ✅ Dynamic row insertion for materials
+- ✅ Padding blank lines between items
+- ✅ Error handling for non-craftable items
+- ✅ Processes items in reverse order to avoid row shifting issues
+
+**Notes:**
+- Requires internet connection to call XIVAPI and Garland Tools APIs
+- Processes items in reverse order to handle row insertion correctly
+- Adds 1 second delay between items to respect API rate limits
+- Items that cannot be crafted will show "Cannot be crafted" in column C
+- Material quantities are automatically multiplied by the quantity in column B
+
+---
+
+## In Progress Features
+
+### 🟡 Crafting Materials
+
+**Version:** 1.0  
+**Last Updated:** 2025-12-28  
+**Function:** `getCraftingMaterials(itemName, includeSubIngredients)`
+
+Gets all materials needed to craft an item, including recursive sub-ingredients (ingredients that need to be crafted themselves). Handles nested crafting recipes automatically.
+
+**Parameters:**
+- `itemName` (string, required) - Name of the item to get crafting materials for (e.g., "Ceviche")
+- `includeSubIngredients` (boolean, optional) - Whether to include sub-ingredients recursively (default: true). If false, only returns direct ingredients.
+
+**Returns:** 
+- `Object` - Crafting materials object with tree structure and flattened materials list
+
+**Usage:**
+- **As library:** `LibraryName.getCraftingMaterials('Ceviche')` or `LibraryName.getCraftingMaterials('Ceviche', true)`
+- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "In Development" → "Get Crafting Materials"
+
+**How it works:**
+1. Takes item name as input (e.g., "Ceviche")
+2. Searches for the item using XIVAPI to get item ID
+3. Retrieves crafting recipe from Garland Tools API
+4. Recursively processes ingredients that can be crafted (up to 5 levels deep)
+5. Flattens the crafting tree to get all base materials needed
+6. Returns structured data with both tree view and flattened materials list
+
+**Data Sources:**
+- **XIVAPI v2** (https://v2.xivapi.com/api) - Item name to ID conversion
+- **Garland Tools** (https://www.garlandtools.org/) - Crafting recipes and ingredient information
+
+**Output Structure:**
+```javascript
+{
+  itemName: "Ceviche",
+  itemId: 44842,
+  canBeCrafted: true,
+  tree: {
+    itemId: 44842,
+    itemName: "Ceviche",
+    canBeCrafted: true,
+    ingredients: [
+      {
+        itemId: 44347,
+        itemName: "Cloudsail",
+        amount: 1,
+        canBeCrafted: false,
+        subTree: null,
+        subIngredients: []
+      },
+      {
+        itemId: 43976,
+        itemName: "Turali Corn Oil",
+        amount: 2,
+        canBeCrafted: true,
+        subTree: {...},
+        subIngredients: [...]
+      }
+    ]
+  },
+  materials: [
+    {
+      itemId: 44347,
+      itemName: "Cloudsail",
+      amount: 1
+    },
+    {
+      itemId: 43981,
+      itemName: "Turali Corn",
+      amount: 12  // 2x Turali Corn Oil requires 6x Turali Corn each
+    }
+  ],
+  formattedTree: "Ceviche:\n  - 1x Cloudsail\n  - 2x Turali Corn Oil (crafted)\n    - 6x Turali Corn\n    ...",
+  formattedMaterials: "1x Cloudsail, 12x Turali Corn, ..."
+}
+```
+
+**Example:**
+```javascript
+// Get all materials needed (including sub-ingredients)
+const materials = FFXIVTools.getCraftingMaterials('Ceviche');
+// Returns: Object with tree, materials array, and formatted strings
+
+// Get only direct ingredients (no recursion)
+const directOnly = FFXIVTools.getCraftingMaterials('Ceviche', false);
+// Returns: Only direct ingredients, no sub-ingredients
+```
+
+**Features:**
+- ✅ Recursive crafting tree (handles ingredients that need to be crafted)
+- ✅ Automatic quantity calculation (multiplies amounts through recipe chain)
+- ✅ Cycle detection (prevents infinite loops)
+- ✅ Depth limiting (max 5 levels to prevent excessive API calls)
+- ✅ Tree view and flattened materials list
+- ✅ Formatted output for easy reading
+
+**Notes:**
+- This is a debug/utility function for testing individual items
+- Requires internet connection to call XIVAPI and Garland Tools APIs
+- Recursive crafting can result in many API calls - be patient for complex recipes
+- Maximum recursion depth is 5 levels to prevent excessive API usage
+- Items that cannot be crafted will return `canBeCrafted: false`
 - Item names must match exactly (case-sensitive)
-- Results are written to spreadsheet columns next to item names
-- Supports both Gil purchases and special currency purchases (scrips, credits, etc.)
+
+---
+
+### ✅ Crafting Request Processing
+
+**Version:** 1.0  
+**Last Updated:** 2025-12-28  
+**Function:** `processCraftingRequest(sheetName, itemColumn, quantityColumn, startRow)`
+
+Batch processes crafting requests from a spreadsheet. Reads item names and quantities, calculates all materials needed (including recursive sub-ingredients), and writes results to the spreadsheet with proper formatting and padding.
+
+**Parameters:**
+- `sheetName` (string, optional) - Sheet name (defaults to "Requested for Crafting")
+- `itemColumn` (string, optional) - Column letter for item names (defaults to 'A')
+- `quantityColumn` (string, optional) - Column letter for quantities (defaults to 'B')
+- `startRow` (number, optional) - Starting row number (defaults to 2, assuming row 1 is header)
+
+**Returns:** 
+- `Array<Object>` - Array of processing results with success status and material counts
+
+**Usage:**
+- **As library:** `LibraryName.processCraftingRequest()` or `LibraryName.processCraftingRequest('Requested for Crafting', 'A', 'B', 2)`
+- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "Process Crafting Request"
+
+**How it works:**
+1. Reads item names from column A and quantities from column B
+2. For each item, gets crafting materials (including recursive sub-ingredients)
+3. Calculates total material quantities (material amount × item quantity)
+4. Inserts rows for materials below each item
+5. Writes material names to column C and quantities to column D
+6. Adds padding blank line between items for readability
+
+**Data Sources:**
+- **XIVAPI v2** (https://v2.xivapi.com/api) - Item name to ID conversion
+- **Garland Tools** (https://www.garlandtools.org/) - Crafting recipes and ingredient information
+
+**Spreadsheet Structure:**
+- **Column A:** Item names (input)
+- **Column B:** Quantity to craft (input)
+- **Column C:** Material names (output, one per line)
+- **Column D:** Total material quantity needed (output, material amount × column B)
+
+**Example:**
+```
+Input:
+Row 1: Item Name | Quantity | Material Name | Material Quantity
+Row 2: Ceviche   | 3        |               |
+Row 3: Iron Ore   | 5        |               |
+
+Output after processing:
+Row 1: Item Name | Quantity | Material Name | Material Quantity
+Row 2: Ceviche   | 3        |               |
+Row 3:           |          | Cloudsail     | 3
+Row 4:           |          | Turali Corn   | 36
+Row 5:           |          | ...           | ...
+Row 6:           |          |               | (blank padding line)
+Row 7: Iron Ore  | 5        |               |
+Row 8:           |          | (materials)   | (quantities)
+```
+
+**Features:**
+- ✅ Batch processing of multiple items
+- ✅ Automatic quantity calculation (multiplies by item quantity)
+- ✅ Recursive crafting support (includes sub-ingredients)
+- ✅ Dynamic row insertion for materials
+- ✅ Padding blank lines between items
+- ✅ Error handling for non-craftable items
+- ✅ Processes items in reverse order to avoid row shifting issues
+
+**Notes:**
+- Requires internet connection to call XIVAPI and Garland Tools APIs
+- Processes items in reverse order to handle row insertion correctly
+- Adds 1 second delay between items to respect API rate limits
+- Items that cannot be crafted will show "Cannot be crafted" in column C
+- Material quantities are automatically multiplied by the quantity in column B
 
 ---
 

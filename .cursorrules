@@ -71,6 +71,19 @@
 - **Provide context**: When explaining concepts, provide enough detail for understanding before suggesting changes
 - **Separate concerns**: Keep explanations separate from implementation suggestions
 
+## Date and Time Handling
+- **When dates are needed**: Always check the current date/time using system commands if uncertain
+  - Use `date +"%Y-%m-%d"` to get current date in YYYY-MM-DD format
+  - Use `date +"%Y"` to get current year
+  - Use `date +"%Y-%m-%d %H:%M:%S"` for full date and time
+- **Date accuracy**: Never assume or guess dates - always verify the current date when:
+  - Adding "Last Updated" dates to features in `FEATURE.md`
+  - Adding completion dates to tasks in `TODO.md`
+  - Creating new documentation entries with dates
+  - Updating version information with dates
+- **Date format**: Use ISO 8601 format (YYYY-MM-DD) for all dates in documentation
+- **Year accuracy**: Pay special attention to the year - verify it matches the current year
+
 ## Documentation Maintenance
 - **CRITICAL**: Update markdown documentation files when making significant changes
 - When adding new functions: Update `API.md` with function documentation

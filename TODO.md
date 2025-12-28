@@ -64,13 +64,15 @@ This file tracks tasks, features, and improvements for the FFXIV Google Apps Scr
 
 ## Completed Tasks
 
-### 2024
+### 2025
 - ✅ Project setup and structure
 - ✅ Created `.cursorrules` with development guidelines
 - ✅ Created documentation files (ARCHITECTURE.md, DEVELOPMENT.md, API.md, CONTRIBUTING.md, PROMPTS.md)
 - ✅ Created basic project structure (Code.gs, Utils.gs, Config.gs)
 - ✅ Set up `.gitignore` and `package.json`
 - ✅ Created TODO.md for task tracking
+- ✅ Item Information Lookup feature (v1.0) - Gathering locations, vendor prices, aetherial reduction
+- ✅ Crafting Materials feature (v1.0) - Get all materials needed to craft items with recursive sub-ingredients
 
 ---
 

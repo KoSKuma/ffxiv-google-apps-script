@@ -434,3 +434,234 @@ function formatReductionSources(sources) {
   }).join(', ');
 }
 
+/**
+ * Gets crafting ingredients for an item from Garland Tools data
+ * @param {Object} garlandData - Item data from Garland Tools API
+ * @return {Array<Object>} Array of ingredient objects with id, amount, and name
+ */
+function getCraftingIngredients(garlandData) {
+  const ingredients = [];
+  
+  try {
+    if (!garlandData || !garlandData.item || !garlandData.item.craft || garlandData.item.craft.length === 0) {
+      return ingredients;
+    }
+    
+    // Get the first craft recipe (usually there's only one)
+    const craft = garlandData.item.craft[0];
+    if (!craft || !craft.ingredients) {
+      return ingredients;
+    }
+    
+    const partials = garlandData.partials || [];
+    
+    // Extract ingredients from the craft recipe
+    craft.ingredients.forEach(function(ingredient) {
+      const ingredientId = ingredient.id;
+      const amount = ingredient.amount || 1;
+      
+      // Find item name from partials
+      const itemPartial = partials.find(function(p) {
+        return p.type === 'item' && p.id === String(ingredientId);
+      });
+      
+      let itemName = 'Item #' + ingredientId;
+      if (itemPartial && itemPartial.obj) {
+        itemName = itemPartial.obj.n || itemName;
+      }
+      
+      ingredients.push({
+        itemId: ingredientId,
+        itemName: itemName,
+        amount: amount
+      });
+    });
+  } catch (error) {
+    logWithTimestamp('Error getting crafting ingredients: ' + error.toString());
+  }
+  
+  return ingredients;
+}
+
+/**
+ * Recursively gets crafting tree for an item (including sub-ingredients that need to be crafted)
+ * @param {number} itemId - The ID of the item to get crafting tree for
+ * @param {number} depth - Current recursion depth (to prevent infinite loops)
+ * @param {number} maxDepth - Maximum recursion depth (default: 5)
+ * @param {Object} visited - Set of visited item IDs to prevent cycles
+ * @return {Object} Crafting tree object with item info and sub-ingredients
+ */
+function getCraftingTree(itemId, depth, maxDepth, visited) {
+  if (depth === undefined) depth = 0;
+  if (maxDepth === undefined) maxDepth = 5;
+  if (visited === undefined) visited = {};
+  
+  // Prevent infinite loops
+  if (depth > maxDepth) {
+    return null;
+  }
+  
+  // Prevent cycles
+  if (visited[itemId]) {
+    return null;
+  }
+  visited[itemId] = true;
+  
+  try {
+    // Get item details
+    const garlandData = getItemDetails(itemId);
+    
+    if (!garlandData || !garlandData.item) {
+      return null;
+    }
+    
+    const itemName = garlandData.item.name;
+    const ingredients = getCraftingIngredients(garlandData);
+    
+    // Check if this item can be crafted
+    const canBeCrafted = ingredients.length > 0;
+    
+    const tree = {
+      itemId: itemId,
+      itemName: itemName,
+      canBeCrafted: canBeCrafted,
+      ingredients: [],
+      depth: depth
+    };
+    
+    // Recursively get sub-ingredients
+    if (canBeCrafted && depth < maxDepth) {
+      ingredients.forEach(function(ingredient) {
+        // Create a new visited map for this branch to allow same item in different branches
+        const branchVisited = {};
+        Object.keys(visited).forEach(function(key) {
+          branchVisited[key] = visited[key];
+        });
+        
+        // Check if this ingredient itself can be crafted
+        const subTree = getCraftingTree(ingredient.itemId, depth + 1, maxDepth, branchVisited);
+        
+        tree.ingredients.push({
+          itemId: ingredient.itemId,
+          itemName: ingredient.itemName,
+          amount: ingredient.amount,
+          canBeCrafted: subTree !== null && subTree.canBeCrafted,
+          subTree: subTree,
+          subIngredients: subTree ? subTree.ingredients : []
+        });
+      });
+    } else {
+      // Leaf node - just add ingredients without recursion
+      ingredients.forEach(function(ingredient) {
+        tree.ingredients.push({
+          itemId: ingredient.itemId,
+          itemName: ingredient.itemName,
+          amount: ingredient.amount,
+          canBeCrafted: false,
+          subTree: null,
+          subIngredients: []
+        });
+      });
+    }
+    
+    return tree;
+  } catch (error) {
+    logWithTimestamp('Error getting crafting tree for item ' + itemId + ': ' + error.toString());
+    return null;
+  }
+}
+
+/**
+ * Flattens a crafting tree into a flat list of all materials needed (with quantities)
+ * Recursively processes sub-ingredients that need to be crafted
+ * @param {Object} tree - Crafting tree object
+ * @param {Object} materialMap - Map to accumulate materials (itemId -> amount)
+ * @return {Object} Map of itemId -> total amount needed
+ */
+function flattenCraftingTree(tree, materialMap) {
+  if (materialMap === undefined) materialMap = {};
+  
+  if (!tree || !tree.ingredients) {
+    return materialMap;
+  }
+  
+  tree.ingredients.forEach(function(ingredient) {
+    const itemId = ingredient.itemId;
+    const amount = ingredient.amount || 1;
+    
+    // If this ingredient can be crafted, recursively process its sub-tree
+    // and add its sub-ingredients instead of the ingredient itself
+    if (ingredient.canBeCrafted && ingredient.subTree) {
+      // Recursively flatten the sub-tree, multiplying by the parent amount
+      const subMaterialMap = flattenCraftingTree(ingredient.subTree, {});
+      Object.keys(subMaterialMap).forEach(function(subItemId) {
+        const subAmount = subMaterialMap[subItemId] * amount;
+        if (materialMap[subItemId]) {
+          materialMap[subItemId] += subAmount;
+        } else {
+          materialMap[subItemId] = subAmount;
+        }
+      });
+    } else {
+      // Leaf node - add the ingredient itself to the material map
+      if (materialMap[itemId]) {
+        materialMap[itemId] += amount;
+      } else {
+        materialMap[itemId] = amount;
+      }
+    }
+  });
+  
+  return materialMap;
+}
+
+/**
+ * Formats crafting tree for display
+ * @param {Object} tree - Crafting tree object
+ * @param {number} indent - Indentation level for display
+ * @return {string} Formatted string representation of crafting tree
+ */
+function formatCraftingTree(tree, indent) {
+  if (indent === undefined) indent = 0;
+  
+  if (!tree) {
+    return 'Item cannot be crafted or not found.';
+  }
+  
+  if (!tree.canBeCrafted) {
+    return tree.itemName + ' (cannot be crafted)';
+  }
+  
+  let result = '';
+  const indentStr = '  '.repeat(indent);
+  
+  result += indentStr + tree.itemName + ':\n';
+  
+  if (tree.ingredients && tree.ingredients.length > 0) {
+    tree.ingredients.forEach(function(ingredient) {
+      result += indentStr + '  - ' + ingredient.amount + 'x ' + ingredient.itemName;
+      
+      if (ingredient.canBeCrafted) {
+        result += ' (crafted)';
+      }
+      
+      result += '\n';
+      
+      // Recursively format sub-ingredients
+      if (ingredient.subIngredients && ingredient.subIngredients.length > 0) {
+        ingredient.subIngredients.forEach(function(subIngredient) {
+          result += indentStr + '    - ' + subIngredient.amount + 'x ' + subIngredient.itemName;
+          if (subIngredient.canBeCrafted) {
+            result += ' (crafted)';
+          }
+          result += '\n';
+        });
+      }
+    });
+  } else {
+    result += indentStr + '  (no ingredients)\n';
+  }
+  
+  return result;
+}
+

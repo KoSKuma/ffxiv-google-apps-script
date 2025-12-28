@@ -108,11 +108,31 @@ function processData(data) {
 - Test functions individually in Apps Script editor
 - Use `Logger.log()` for debugging
 - Check execution logs for errors
+- Use `Test.gs` file for dedicated test functions
 
 ### Test Functions
-- Create test functions with `test` prefix
+- Test functions are in `Test.gs` file (safe to keep, won't be removed)
+- All test functions have `test` prefix
 - Test edge cases and error conditions
-- Comment out or remove before deployment
+- Use `onTestOpen()` to create test menu for easy access
+- Test functions can be run individually from Apps Script editor
+
+### Using Test.gs
+1. Push code: `clasp push`
+2. Open Apps Script editor: `clasp open`
+3. Select test function from dropdown (e.g., `testSearchItem`)
+4. Click Run
+5. View logs: View → Logs or run `clasp logs`
+
+**Available Test Functions:**
+- `testSearchItem()` - Test item search
+- `testGetItemDetails()` - Test item details retrieval
+- `testLookupItemInfo()` - Test full item lookup
+- `testGatheringLocations()` - Test gathering location extraction
+- `testVendorInfo()` - Test vendor information
+- `testAPIConnectivity()` - Test API connection
+- `testMultipleItems()` - Test multiple items
+- `testProcessItemList()` - Test batch processing
 
 ## Debugging
 

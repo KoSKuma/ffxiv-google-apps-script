@@ -22,10 +22,10 @@ This document tracks all features available in the FFXIV Google Apps Script proj
 _No production features implemented yet._
 
 ### 🟡 In Progress Features
-_No features currently in progress._
+- [Item Information Lookup (MVP)](#-item-information-lookup-mvp) - `lookupItemInfo(itemName)` / `processItemList(sheetName, itemColumn, startRow)`
 
 ### ⬜ Planned Features
-_No features currently planned._
+- [Item Information Lookup (Full)](#-item-information-lookup-full) - Full version with market board prices
 
 ---
 
@@ -220,13 +220,145 @@ _Production features will be listed here once implemented._
 
 ## In Progress Features
 
-_No features currently in progress._
+### 🟡 Item Information Lookup (MVP)
+
+**Function:** `lookupItemInfo(itemName)` / `processItemList(sheetName, itemColumn, startRow)`
+
+Looks up FFXIV item information including gathering locations and vendor prices. This is the MVP version that focuses on gathering locations and vendor prices only.
+
+**Parameters:**
+- `itemName` (string, required) - Name of the item to look up (e.g., "Iron Ore")
+- `sheetName` (string, optional) - Sheet name for batch processing (uses `CONFIG.SHEET_NAMES.MAIN` if not provided)
+- `itemColumn` (string, optional) - Column letter containing item names (defaults to 'A')
+- `startRow` (number, optional) - Starting row number (defaults to 2, assuming row 1 is header)
+
+**Returns:** 
+- Single lookup: `Object` - Item information object
+- Batch processing: `Array<Object>` - Array of item information objects
+
+**Usage:**
+- **As library:** `LibraryName.lookupItemInfo('Iron Ore')` or `LibraryName.processItemList('Items', 'A', 2)`
+- **In bound spreadsheet:** Available via menu "FFXIV Tools" → "Lookup Item Info" or "Process Item List"
+
+**How it works:**
+1. Takes item name as input (e.g., "Iron Ore")
+2. Calls XIVAPI to search for the item
+3. Retrieves gathering location information (nodes, zones, gathering type)
+4. Retrieves vendor information (NPC location, price, currency)
+5. Returns structured data with all information
+6. For batch processing: reads item names from spreadsheet column and processes each one
+
+**Data Sources:**
+- **XIVAPI** (https://xivapi.com/) - Primary API for item data, gathering locations, and vendor information
+- Additional APIs may be used as needed
+
+**Output Structure:**
+```javascript
+{
+  itemName: "Iron Ore",
+  itemId: 4,
+  gatheringLocations: [
+    {
+      type: "Mining",
+      zone: "Central Thanalan",
+      node: "Mineral Deposit",
+      level: 5,
+      coordinates: "x, y"
+    }
+  ],
+  vendors: [
+    {
+      npcName: "Merchant",
+      location: "Limsa Lominsa",
+      price: 5,
+      currency: "Gil"
+    }
+  ]
+}
+```
+
+**Example:**
+```javascript
+// Single item lookup
+const itemInfo = FFXIVTools.lookupItemInfo('Iron Ore');
+// Returns: Object with gathering locations and vendor info
+
+// Batch process from spreadsheet
+FFXIVTools.processItemList('Items', 'A', 2);
+// Reads items from column A starting at row 2, processes each, writes results
+```
+
+**MVP Scope:**
+- ✅ Item name lookup via XIVAPI
+- ✅ Gathering location information
+- ✅ Vendor/NPC purchase information
+- ✅ Batch processing from spreadsheet
+- ❌ Market board prices (future feature)
+
+**Notes:**
+- Requires internet connection to call XIVAPI
+- API rate limits may apply - batch processing includes delays
+- Item names must match exactly or use fuzzy matching
+- Results are written to spreadsheet columns next to item names
 
 ---
 
 ## Planned Features
 
-_No features currently planned._
+### ⬜ Item Information Lookup (Full)
+
+**Function:** `lookupItemInfo(itemName, includeMarketBoard)` / `processItemList(sheetName, itemColumn, startRow, includeMarketBoard)`
+
+Full version of item information lookup including market board prices from Universalis API.
+
+**Additional Features (beyond MVP):**
+- Market board average prices from Universalis API
+- Historical price trends
+- Price comparison (vendor vs market board)
+- Best source recommendation (cheapest option)
+- Cross-world price comparison
+
+**Data Sources:**
+- **XIVAPI** - Item data, gathering locations, vendor information
+- **Universalis** (https://universalis.app/) - Market board prices and trends
+
+**Output Structure (Extended):**
+```javascript
+{
+  itemName: "Iron Ore",
+  itemId: 4,
+  gatheringLocations: [...],
+  vendors: [...],
+  marketBoard: {
+    averagePrice: 150,
+    currentPrice: 145,
+    historicalAverage: 160,
+    cheapestWorld: "Gilgamesh",
+    priceTrend: "decreasing"
+  },
+  recommendations: {
+    bestSource: "vendor", // or "gathering" or "marketboard"
+    reason: "Vendor price (5 gil) is cheapest option"
+  }
+}
+```
+
+**Usage:**
+```javascript
+// With market board data
+const itemInfo = FFXIVTools.lookupItemInfo('Iron Ore', true);
+// Returns: Full object including market board prices
+
+// Batch process with market board
+FFXIVTools.processItemList('Items', 'A', 2, true);
+```
+
+**Future Enhancements:**
+- Price alerts/notifications
+- Crafting recipe integration
+- Teamcraft export format support
+- Multi-item comparison
+- Gathering route optimization
 
 ---
 

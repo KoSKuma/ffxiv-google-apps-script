@@ -12,6 +12,7 @@ This document contains useful Google Sheets formulas, functions, and commands th
 ### Status Sheet
 - [Count of Unique Materials Needed](#count-of-unique-materials-needed)
 - [Check for Duplicates in Request for Material](#check-for-duplicates-in-request-for-material)
+- [Check for Missing Materials](#check-for-missing-materials)
 - [List Missing Materials](#list-missing-materials)
 
 ---
@@ -205,6 +206,37 @@ If you want to see which materials are duplicated, use this formula (place in ce
 - If "Request for Material" has "Iron Ore", "Copper Ore", "Iron Ore", "Silver Ore":
   - Status cell: "⚠ Duplicates found"
   - Duplicate list: "Iron Ore" (appears twice)
+
+### Check for Missing Materials
+
+Check if there are any materials from "Requested for Crafting" column C that are missing from "Request for Material" column A. Shows a status message indicating whether missing materials exist.
+
+**Formula (place in cell, e.g., B3):**
+```excel
+=IF(IF(SUMPRODUCT(('Requested for Crafting'!C2:C<>"") * (ISERROR(MATCH('Requested for Crafting'!C2:C, 'Request for Material'!A2:A, 0)))) = 0, 0, COUNTA(UNIQUE(FILTER('Requested for Crafting'!C2:C, ('Requested for Crafting'!C2:C<>"") * (ISERROR(MATCH('Requested for Crafting'!C2:C, 'Request for Material'!A2:A, 0))))))) = 0, "✓ All materials are tracked", "⚠ Missing materials found")
+```
+
+**Explanation:**
+- `SUMPRODUCT(('Requested for Crafting'!C2:C<>"") * (ISERROR(MATCH(...))))` - Counts how many materials are missing by checking each row
+- `('Requested for Crafting'!C2:C<>"")` - Material name must not be empty
+- `MATCH('Requested for Crafting'!C2:C, 'Request for Material'!A2:A, 0)` - Checks if material exists in "Request for Material" column A
+- `ISERROR(...)` - Returns TRUE if material is NOT found (missing)
+- `*` - Both conditions must be true (AND logic)
+- `IF(SUMPRODUCT(...) = 0, 0, COUNTA(UNIQUE(FILTER(...))))` - If no missing materials (SUMPRODUCT = 0), returns 0; otherwise counts unique missing materials using FILTER
+- `FILTER(...)` - Gets material names that are missing (only used when there are missing materials)
+- `UNIQUE(...)` - Removes duplicates from the missing materials list
+- `COUNTA(...)` - Counts the number of unique missing materials
+- `IF(..., "✓ All materials are tracked", "⚠ Missing materials found")` - If count is 0, shows "✓ All materials are tracked"; otherwise shows "⚠ Missing materials found"
+
+**Usage:**
+- Place in a cell in the "Status" sheet (e.g., B3)
+- Shows "✓ All materials are tracked" if all materials from "Requested for Crafting" are in "Request for Material"
+- Shows "⚠ Missing materials found" if there are materials missing
+- Updates automatically when data changes
+
+**Example:**
+- If all materials from "Requested for Crafting" are in "Request for Material": "✓ All materials are tracked"
+- If "Iron Ore" is in "Requested for Crafting" but not in "Request for Material": "⚠ Missing materials found"
 
 ### List Missing Materials
 

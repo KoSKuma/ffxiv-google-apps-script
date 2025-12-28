@@ -129,6 +129,29 @@ curl "https://www.garlandtools.org/db/doc/item/en/3/5111.json"
         "icon": 21202,
         "nodes": [158],
         "vendors": [1000999, 1008837, ...],
+        "tradeShops": [
+            {
+                "shop": "Orange Scrip Exchange",
+                "npcs": [1052588],
+                "listings": [
+                    {
+                        "item": [{"id": "44035", "amount": 1}],
+                        "currency": [{"id": "41785", "amount": 100}]
+                    }
+                ]
+            }
+        ],
+        "reducedFrom": [43933, 43931, ...],
+        "craft": [
+            {
+                "id": 35990,
+                "job": 15,
+                "ingredients": [
+                    {"id": 44347, "amount": 1},
+                    {"id": 43976, "amount": 2}
+                ]
+            }
+        ],
         "drops": [21270000001671, ...],
         "ingredient_of": {
             "5057": 3,
@@ -154,6 +177,17 @@ curl "https://www.garlandtools.org/db/doc/item/en/3/5111.json"
             "obj": {
                 // NPC details
             }
+        },
+        {
+            "type": "item",
+            "id": "43933",
+            "obj": {
+                "i": 43933,
+                "n": "Goldbranch",
+                "l": 670,
+                "c": 22416,
+                "t": 54
+            }
         }
     ]
 }
@@ -168,47 +202,73 @@ curl "https://www.garlandtools.org/db/doc/item/en/3/5111.json"
 - `item.price` - Base price
 - `item.sell_price` - NPC sell price
 - `item.nodes` - Array of gathering node IDs
-- `item.vendors` - Array of vendor/NPC IDs
+- `item.vendors` - Array of vendor/NPC IDs (for Gil purchases)
+- `item.tradeShops` - Array of trade shop objects (for special currency purchases)
+  - `tradeShops[].shop` - Shop name
+  - `tradeShops[].npcs` - Array of NPC IDs
+  - `tradeShops[].listings` - Array of listings with `item` and `currency` arrays
 - `item.drops` - Array of drop source IDs
-- `item.ingredient_of` - Object mapping recipe IDs to quantities needed
+- `item.reducedFrom` - Array of item IDs that can be reduced to obtain this item (aetherial reduction)
+- `item.craft` - Array of crafting recipes to craft this item
+  - `craft[].id` - Recipe ID
+  - `craft[].job` - Crafting job ID
+  - `craft[].ingredients` - Array of ingredient objects with `id` and `amount`
+- `item.ingredient_of` - Object mapping recipe IDs to quantities needed (recipes that USE this item as ingredient)
 - `item.leves` - Array of levequest IDs that reward this item
 
 **Partials Array:**
-- Contains detailed information for nodes and NPCs referenced in the item object
-- `partials[].type` - Type: "node" or "npc"
-- `partials[].id` - The ID referenced in item.nodes or item.vendors
+- Contains detailed information for nodes, NPCs, and items referenced in the item object
+- `partials[].type` - Type: "node", "npc", or "item"
+- `partials[].id` - The ID referenced in item.nodes, item.vendors, item.reducedFrom, or craft ingredients
 - `partials[].obj` - Detailed object:
-  - **For nodes:**
+  - **For nodes (`type: "node"`):**
+    - `i` - Node ID
     - `n` - Node name (e.g., "Horizon's Edge")
     - `l` - Level requirement
     - `t` - Type (0 = Mining, 1 = Botany, etc.)
     - `z` - Zone ID
-  - **For NPCs:**
+  - **For NPCs (`type: "npc"`):**
+    - `i` - NPC ID
     - `n` - NPC name (e.g., "Material Supplier")
     - `l` - Location level
     - `s` - Shop type
     - `t` - NPC type/title
     - `c` - Coordinates array [x, y]
+  - **For items (`type: "item"`):**
+    - `i` - Item ID
+    - `n` - Item name
+    - `l` - Item level
+    - `c` - Icon ID
+    - `t` - Category ID
 
 **Advantages:**
 - ✅ Includes gathering node IDs and details in `partials`
-- ✅ Includes vendor IDs and details in `partials`
+- ✅ Includes vendor IDs and details in `partials` (both Gil and special currency)
+- ✅ Includes trade shops for special currency purchases
+- ✅ Includes aetherial reduction sources (`reducedFrom`)
+- ✅ Includes crafting recipes (`craft`) with ingredients
 - ✅ Includes drop sources
-- ✅ Shows crafting recipes that use the item
+- ✅ Shows crafting recipes that use the item (`ingredient_of`)
 - ✅ Includes node names, levels, and zones directly
 - ✅ Single API call provides comprehensive information
 
 **Usage Notes:**
 - Requires item ID (not name search) - use XIVAPI search first to get ID
-- Node and vendor details are included in `partials` array
+- Node, vendor, and item details are included in `partials` array
+- `item.vendors` contains NPC IDs for Gil purchases
+- `item.tradeShops` contains special currency purchase information
+- `item.reducedFrom` contains item IDs that can be reduced to obtain this item
+- `item.craft` contains recipes to craft this item (use `craft[0].ingredients` for ingredients)
+- `item.ingredient_of` contains recipes that use this item as an ingredient (reverse relationship)
 - Can be used as alternative or supplement to XIVAPI
 - More detailed gathering/vendor information than XIVAPI
 
 **Potential Use Cases:**
 - Get gathering node information (name, level, zone)
-- Get vendor/NPC information
+- Get vendor/NPC information (both Gil and special currency)
+- Get aetherial reduction sources
+- Get crafting recipe information (both recipes to craft item and recipes that use item)
 - Get drop source information
-- Get crafting recipe information
 - Alternative source when XIVAPI is unavailable
 
 **Example Workflow:**

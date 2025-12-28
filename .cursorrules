@@ -86,6 +86,13 @@
 
 ## Documentation Maintenance
 - **CRITICAL**: Update markdown documentation files when making significant changes
+- **When reviewing/checking files**: If the user asks to "check", "review", "verify", or "is this up to date" for any file:
+  - Compare the file content with the actual codebase implementation
+  - Check for discrepancies between documentation and code
+  - Verify all examples, function lists, and references are accurate
+  - Update any outdated information found
+  - Check related documentation files that might also need updates
+  - Report what was found and what was updated
 - When adding new functions: Update `API.md` with function documentation
 - When adding new features: Update `ARCHITECTURE.md` with module information
 - When changing workflows: Update `DEVELOPMENT.md` with new processes

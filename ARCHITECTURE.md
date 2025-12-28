@@ -8,11 +8,14 @@ This Google Apps Script project is designed to automate and enhance Google Sheet
 
 ```
 .
-├── Code.gs              # Main entry point, menu setup, and primary functions
-├── Config.gs            # Configuration constants and settings
-├── Utils.gs             # Reusable utility functions
+├── Code.gs              # Main entry point, menu setup, and public API functions
+├── Config.gs            # Configuration constants and settings (INTERNAL)
+├── Utils.gs             # Reusable utility functions (INTERNAL)
+├── FFXIVAPI.gs          # FFXIV API integration functions (INTERNAL)
+├── Test.gs              # Test functions for debugging (not pushed to production)
+├── LIBRARY_TEMPLATE.gs  # Template code for library integration (not pushed)
 ├── appsscript.json      # Apps Script manifest and configuration
-└── [Feature].gs         # Feature-specific modules (add as needed)
+└── [Feature].gs         # Additional feature-specific modules (add as needed)
 ```
 
 ## Module Responsibilities
@@ -43,19 +46,54 @@ This Google Apps Script project is designed to automate and enhance Google Sheet
 - Error handling helpers
 - Used internally by public functions in Code.gs
 
+### FFXIVAPI.gs
+- **INTERNAL**: FFXIV API integration functions (not directly accessible as library)
+- Functions for interacting with XIVAPI v2 and Garland Tools APIs
+- Item search, item details retrieval, gathering locations, vendor info, crafting recipes
+- Used internally by public functions in Code.gs
+- Functions: `searchItemByName()`, `getItemDetails()`, `getGatheringLocations()`, `getVendorInfo()`, `getCraftingTree()`, etc.
+
+### Test.gs
+- **DEVELOPMENT ONLY**: Test functions for debugging and development
+- Not pushed to production (excluded via `.claspignore`)
+- Contains test functions for all public API functions
+- Used for local testing and validation
+
+### LIBRARY_TEMPLATE.gs
+- **TEMPLATE**: Copy-paste code for library integration
+- Not pushed to production (excluded via `.claspignore`)
+- Contains menu setup code for spreadsheets using the library
+- Library users copy this code to their spreadsheet's script editor
+
 ### Feature Modules
 - Self-contained feature logic
 - Feature-specific functions
 - Should be independent and reusable
+- Marked as INTERNAL if not part of public API
 
 ## Data Flow
 
-1. **User Interaction** → Menu item or trigger
-2. **Code.gs** → Orchestrates the flow
-3. **Feature Modules** → Execute business logic
-4. **Utils.gs** → Helper functions for data operations
+1. **User Interaction** → Menu item or library function call
+2. **Code.gs** → Public API functions orchestrate the flow
+3. **FFXIVAPI.gs** → External API calls (XIVAPI, Garland Tools)
+4. **Utils.gs** → Helper functions for spreadsheet operations
 5. **Config.gs** → Provides configuration values
 6. **Spreadsheet** → Data source/destination
+
+**Example Flow:**
+```
+User calls: LibraryName.lookupItemInfo('Iron Ore')
+  ↓
+Code.gs: lookupItemInfo()
+  ↓
+FFXIVAPI.gs: searchItemByName() → XIVAPI v2
+  ↓
+FFXIVAPI.gs: getItemDetails() → Garland Tools
+  ↓
+FFXIVAPI.gs: getGatheringLocations(), getVendorInfo()
+  ↓
+Code.gs: Returns formatted result
+```
 
 ## Design Patterns
 
@@ -63,8 +101,9 @@ This Google Apps Script project is designed to automate and enhance Google Sheet
 - **Public Functions**: High-level functions in `Code.gs` that expose complete functionality
 - **Internal Utilities**: `Utils.gs` functions used by public functions (not exposed)
 - **Internal Config**: `Config.gs` constants used by public functions (not exposed)
+- **Internal API Integration**: `FFXIVAPI.gs` functions used by public functions (not exposed)
 - Library users only need to call public functions - all internals are handled automatically
-- Example: `LibraryName.lookupItemInfo(itemName)` uses CONFIG and Utils internally
+- Example: `LibraryName.lookupItemInfo(itemName)` uses CONFIG, Utils, and FFXIVAPI internally
 
 ### Configuration Pattern
 - All configuration values centralized in `Config.gs`
@@ -95,11 +134,14 @@ This Google Apps Script project is designed to automate and enhance Google Sheet
 ## Extension Points
 
 To add new features:
-1. Create a new `.gs` file for the feature (internal utilities)
+1. Create a new `.gs` file for the feature (internal utilities) OR add to existing `FFXIVAPI.gs` if API-related
 2. Add high-level public function to `Code.gs` that uses the feature
-3. Add internal utility functions to `Utils.gs` if needed
-4. Add configuration to `Config.gs` if needed
-5. Document in this file
+3. Add internal utility functions to `Utils.gs` if needed (spreadsheet operations)
+4. Add internal API functions to `FFXIVAPI.gs` if needed (external API calls)
+5. Add configuration to `Config.gs` if needed
+6. Update `FEATURE.md` with feature documentation
+7. Update `API.md` with public API documentation
+8. Document in this file
 
 ### Adding New Public Functions (Library API)
 
@@ -122,19 +164,37 @@ Example:
  * @return {Array} Description of return value
  */
 function myNewFunction(param1, param2) {
-  // Uses CONFIG internally
-  const sheetName = param2 || CONFIG.SHEET_NAMES.MAIN;
-  
-  // Uses FFXIVAPI internally
-  const searchResult = searchItemByName(itemName);
-  const garlandData = getItemDetails(searchResult.ID);
-  
-  // Process and return
-  return {
-    itemName: garlandData.item.name,
-    gatheringLocations: getGatheringLocations(garlandData),
-    vendors: getVendorInfo(searchResult.ID, garlandData)
-  };
+  try {
+    // Uses CONFIG internally
+    const sheetName = param2 || CONFIG.SHEET_NAMES.MAIN;
+    
+    // Uses Utils internally
+    const sheet = getOrCreateSheet(sheetName);
+    
+    // Uses FFXIVAPI internally
+    const searchResult = searchItemByName(itemName);
+    const garlandData = getItemDetails(searchResult.ID);
+    
+    // Process and return
+    return {
+      itemName: garlandData.item.name,
+      gatheringLocations: getGatheringLocations(garlandData),
+      vendors: getVendorInfo(searchResult.ID, garlandData)
+    };
+  } catch (error) {
+    logWithTimestamp('Error in myNewFunction: ' + error.toString());
+    throw error;
+  }
 }
 ```
+
+## File Exclusion
+
+Some files are excluded from being pushed to Apps Script via `.claspignore`:
+- `Test.gs` - Development test functions
+- `LIBRARY_TEMPLATE.gs` - Template code for library users
+- Documentation files (`.md` files)
+- Configuration files (`.json`, `.gitignore`, etc.)
+
+This prevents conflicts and keeps the production code clean.
 

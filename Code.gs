@@ -24,8 +24,8 @@
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('FFXIV Tools')
-    .addItem('Obtain Material Information', 'menuObtainMaterialInfo')
     .addItem('Process Crafting Request', 'menuProcessCraftingRequest')
+    .addItem('Obtain Material Information', 'menuObtainMaterialInfo')
     .addSeparator()
     .addSubMenu(ui.createMenu('Debug')
       .addItem('Lookup Item Info', 'menuLookupItemInfo')

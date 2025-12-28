@@ -34,8 +34,27 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   
   ui.createMenu('FFXIV Tools')
+    .addItem('Process Crafting Request', 'menuProcessCraftingRequest')
     .addItem('Obtain Material Information', 'menuObtainMaterialInfo')
     .addToUi();
+}
+
+/**
+ * Menu handler: Process crafting requests
+ * 
+ * Processes items from the "Requested for Crafting" sheet.
+ * This is the main production workflow for batch crafting material calculation.
+ */
+function menuProcessCraftingRequest() {
+  try {
+    const sheetName = 'Requested for Crafting';
+    
+    // Replace FFXIVTools with your library identifier
+    FFXIVTools.processCraftingRequest(sheetName);
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
+    Logger.log('Error in menuProcessCraftingRequest: ' + error.toString());
+  }
 }
 
 /**

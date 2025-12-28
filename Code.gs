@@ -112,3 +112,34 @@ function processDataExample() {
   }
 }
 
+/**
+ * Example: Working with another spreadsheet
+ * This demonstrates how to access spreadsheets other than the bound one
+ * 
+ * To use this:
+ * 1. Add the spreadsheet ID to CONFIG.SPREADSHEET_IDS in Config.gs
+ * 2. Get the ID from the spreadsheet URL (the long string between /d/ and /edit)
+ */
+function workWithAnotherSpreadsheet() {
+  try {
+    // Example: Open another spreadsheet by ID
+    // First, add the ID to CONFIG.SPREADSHEET_IDS in Config.gs
+    // const otherSpreadsheetId = CONFIG.SPREADSHEET_IDS.MAIN_DATA;
+    // const otherSpreadsheet = openSpreadsheetById(otherSpreadsheetId);
+    
+    // Or open by URL
+    // const url = 'https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit';
+    // const otherSpreadsheet = openSpreadsheetByUrl(url);
+    
+    // Example: Work with the other spreadsheet
+    // const otherSheet = otherSpreadsheet.getActiveSheet();
+    // otherSheet.getRange('A1').setValue('Hello from another spreadsheet!');
+    
+    SpreadsheetApp.getUi().alert('See code comments for example of working with other spreadsheets');
+    Logger.log('Example function for working with other spreadsheets');
+  } catch (error) {
+    Logger.log('Error in workWithAnotherSpreadsheet: ' + error.toString());
+    SpreadsheetApp.getUi().alert('Error: ' + error.toString());
+  }
+}
+

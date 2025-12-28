@@ -245,6 +245,71 @@ clasp deploy
 - Script ID is in the URL: `https://script.google.com/home/projects/[SCRIPT_ID]/edit`
 - Or run `clasp open` to see the URL
 
+## Using Your Script with Other Spreadsheets
+
+**Yes, you can use your Apps Script with other spreadsheets!** Here are your options:
+
+### Option 1: Access Other Spreadsheets by ID or URL
+
+Even though your script is bound to one spreadsheet, you can open and work with other spreadsheets:
+
+```javascript
+// Open a spreadsheet by ID
+function workWithAnotherSheet() {
+  const otherSpreadsheetId = 'YOUR_SPREADSHEET_ID_HERE';
+  const otherSpreadsheet = SpreadsheetApp.openById(otherSpreadsheetId);
+  const sheet = otherSpreadsheet.getActiveSheet();
+  
+  // Now you can work with this other spreadsheet
+  sheet.getRange('A1').setValue('Hello from another sheet!');
+}
+
+// Or open by URL
+function workWithSheetByUrl() {
+  const url = 'https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit';
+  const otherSpreadsheet = SpreadsheetApp.openByUrl(url);
+  const sheet = otherSpreadsheet.getActiveSheet();
+  
+  sheet.getRange('A1').setValue('Hello!');
+}
+```
+
+**Important Notes:**
+- `SpreadsheetApp.getActiveSpreadsheet()` always refers to the **bound spreadsheet**
+- `onOpen()` trigger only runs in the **bound spreadsheet**
+- To work with other spreadsheets, use `openById()` or `openByUrl()`
+- You need appropriate permissions to access other spreadsheets
+
+### Option 2: Deploy as a Library
+
+You can deploy your script as a library and use it in multiple spreadsheets:
+
+1. In Apps Script editor, go to `Deploy` → `New deployment`
+2. Select `Library` as the type
+3. Other spreadsheets can then add your script as a library
+4. Access functions via `LibraryName.functionName()`
+
+### Option 3: Create a Standalone Script
+
+If you want a script that's not bound to any spreadsheet:
+
+```bash
+clasp create --type standalone --title "My Standalone Script"
+```
+
+Then use `openById()` or `openByUrl()` to access any spreadsheet you need.
+
+### Summary
+
+| Method | Bound Spreadsheet | Other Spreadsheets |
+|--------|------------------|-------------------|
+| `getActiveSpreadsheet()` | ✅ Works | ❌ Only works in bound sheet |
+| `openById()` / `openByUrl()` | ✅ Works | ✅ Works (with permissions) |
+| `onOpen()` trigger | ✅ Works | ❌ Only works in bound sheet |
+| Deploy as Library | ✅ Works | ✅ Works in all sheets using it |
+
+**Recommendation**: For most use cases, using `openById()` or `openByUrl()` is the simplest way to work with multiple spreadsheets from one script.
+
 ## Best Practices
 
 1. **Always edit locally** - Don't edit in Apps Script editor if possible
@@ -252,6 +317,7 @@ clasp deploy
 3. **Pull if you must edit online** - If you edit in Apps Script editor, `clasp pull` immediately
 4. **Commit regularly** - Use Git to track your changes
 5. **Test thoroughly** - Test in Google Sheets after each push
+6. **Store spreadsheet IDs in Config.gs** - If working with multiple sheets, keep IDs in your config
 
 ## Next Steps
 

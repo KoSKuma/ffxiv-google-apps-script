@@ -64,6 +64,13 @@
 - Use appropriate permission scopes
 - Never log sensitive information
 
+## Communication and Workflow
+- **When answering questions**: Always answer the user's question first with a clear explanation
+- **After answering**: Ask the user if they would like to update the code or documentation based on the answer
+- **Do not assume**: Don't make code changes automatically when answering questions - wait for explicit confirmation
+- **Provide context**: When explaining concepts, provide enough detail for understanding before suggesting changes
+- **Separate concerns**: Keep explanations separate from implementation suggestions
+
 ## Documentation Maintenance
 - **CRITICAL**: Update markdown documentation files when making significant changes
 - When adding new functions: Update `API.md` with function documentation

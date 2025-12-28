@@ -74,3 +74,33 @@ function logWithTimestamp(message) {
   Logger.log(`[${timestamp}] ${message}`);
 }
 
+/**
+ * Opens a spreadsheet by ID
+ * Useful for working with spreadsheets other than the bound one
+ * @param {string} spreadsheetId - The ID of the spreadsheet to open
+ * @return {Spreadsheet} The spreadsheet object
+ */
+function openSpreadsheetById(spreadsheetId) {
+  try {
+    return SpreadsheetApp.openById(spreadsheetId);
+  } catch (error) {
+    Logger.log('Error opening spreadsheet by ID: ' + error.toString());
+    throw error;
+  }
+}
+
+/**
+ * Opens a spreadsheet by URL
+ * Useful for working with spreadsheets other than the bound one
+ * @param {string} url - The URL of the spreadsheet to open
+ * @return {Spreadsheet} The spreadsheet object
+ */
+function openSpreadsheetByUrl(url) {
+  try {
+    return SpreadsheetApp.openByUrl(url);
+  } catch (error) {
+    Logger.log('Error opening spreadsheet by URL: ' + error.toString());
+    throw error;
+  }
+}
+

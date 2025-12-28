@@ -136,16 +136,18 @@ Display the total number of unique material names (not quantities) that still ne
 
 **Formula (place in cell, e.g., B1):**
 ```excel
-=COUNTA(UNIQUE(FILTER('Request for Material'!A2:A, ('Request for Material'!A2:A<>"") * ('Request for Material'!D2:D>0))))
+=IF(COUNTIF('Request for Material'!D2:D, ">0") = 0, 0, COUNTA(FILTER('Request for Material'!A2:A, ('Request for Material'!A2:A<>"") * ('Request for Material'!D2:D>0))))
 ```
 
 **Explanation:**
+- `COUNTIF('Request for Material'!D2:D, ">0")` - Counts how many materials have "Need More" (D) greater than 0
+- `IF(..., 0, ...)` - If no materials need more (count = 0), returns 0; otherwise counts materials
 - `FILTER('Request for Material'!A2:A, ...)` - Gets material names from column A that meet the conditions
 - `('Request for Material'!A2:A<>"")` - Material name must not be empty
 - `('Request for Material'!D2:D>0)` - "Need More" quantity (column D) must be greater than 0
 - `*` - Both conditions must be true (AND logic)
-- `UNIQUE(...)` - Removes duplicates to get unique material names (handles any duplicates in source data)
-- `COUNTA(...)` - Counts the number of unique materials (counts non-empty cells)
+- `COUNTA(...)` - Counts the number of materials (counts non-empty cells)
+- **Note:** UNIQUE is not needed since column A is already guaranteed to have no duplicates
 
 **Usage:**
 - Place in a cell in the "Status" sheet (e.g., B1)
@@ -156,6 +158,7 @@ Display the total number of unique material names (not quantities) that still ne
 
 **Example:**
 - If "Request for Material" has "Iron Ore" (D=50), "Copper Ore" (D=0), and "Silver Ore" (D=30), the result will be 2 (only "Iron Ore" and "Silver Ore" have D > 0)
+- If all materials are fulfilled (all D = 0 or negative), the result will be 0 (not 1)
 
 ### Check for Duplicates in Request for Material
 

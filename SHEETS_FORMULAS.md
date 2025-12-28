@@ -4,8 +4,15 @@ This document contains useful Google Sheets formulas, functions, and commands th
 
 ## Table of Contents
 
-- [Material List Operations](#material-list-operations)
-- [Status Sheet](#status-sheet)
+### Material List Operations
+- [Get Unique Material Names (De-duplicated)](#get-unique-material-names-de-duplicated)
+- [Sum Material Quantities by Item Name](#sum-material-quantities-by-item-name)
+- [Calculate Additional Materials Needed (Shortage)](#calculate-additional-materials-needed-shortage)
+
+### Status Sheet
+- [Count of Unique Materials Needed](#count-of-unique-materials-needed)
+- [Check for Duplicates in Request for Material](#check-for-duplicates-in-request-for-material)
+- [List Missing Materials](#list-missing-materials)
 
 ---
 
@@ -125,25 +132,76 @@ Formulas for the "Status" sheet that displays summary information about material
 
 ### Count of Unique Materials Needed
 
-Display the total number of unique material names (not quantities) that are needed.
+Display the total number of unique material names (not quantities) that still need to be obtained (where "Need More" column D is greater than 0).
 
 **Formula (place in cell, e.g., B1):**
 ```excel
-=COUNTA(UNIQUE(FILTER('Requested for Crafting'!C2:C, 'Requested for Crafting'!C2:C<>"")))
+=COUNTA(UNIQUE(FILTER('Request for Material'!A2:A, ('Request for Material'!A2:A<>"") * ('Request for Material'!D2:D>0))))
 ```
 
 **Explanation:**
-- `FILTER('Requested for Crafting'!C2:C, 'Requested for Crafting'!C2:C<>"")` - Gets all non-empty material names from column C
-- `UNIQUE(...)` - Removes duplicates to get unique material names
+- `FILTER('Request for Material'!A2:A, ...)` - Gets material names from column A that meet the conditions
+- `('Request for Material'!A2:A<>"")` - Material name must not be empty
+- `('Request for Material'!D2:D>0)` - "Need More" quantity (column D) must be greater than 0
+- `*` - Both conditions must be true (AND logic)
+- `UNIQUE(...)` - Removes duplicates to get unique material names (handles any duplicates in source data)
 - `COUNTA(...)` - Counts the number of unique materials (counts non-empty cells)
 
 **Usage:**
 - Place in a cell in the "Status" sheet (e.g., B1)
-- Shows the total number of different materials needed
-- Updates automatically when "Requested for Crafting" data changes
+- Shows the total number of different materials that still need to be obtained (where shortage > 0)
+- Updates automatically when "Request for Material" data changes
+- Only counts materials where you still need more (column D > 0)
+- Uses "Request for Material" sheet as the source (column A for names, column D for "Need More")
 
 **Example:**
-- If you need "Iron Ore", "Copper Ore", and "Iron Ore" (duplicate), the result will be 2 (two unique materials)
+- If "Request for Material" has "Iron Ore" (D=50), "Copper Ore" (D=0), and "Silver Ore" (D=30), the result will be 2 (only "Iron Ore" and "Silver Ore" have D > 0)
+
+### Check for Duplicates in Request for Material
+
+Check if there are any duplicate material names in "Request for Material" column A. Shows a status message indicating whether duplicates exist.
+
+**Formula (place in cell, e.g., B2):**
+```excel
+=IF(COUNTA(FILTER('Request for Material'!A2:A, 'Request for Material'!A2:A<>"")) = COUNTA(UNIQUE(FILTER('Request for Material'!A2:A, 'Request for Material'!A2:A<>""))), "✓ No duplicates", "⚠ Duplicates found")
+```
+
+**Explanation:**
+- `FILTER('Request for Material'!A2:A, 'Request for Material'!A2:A<>"")` - Gets all non-empty material names from column A
+- `COUNTA(...)` - Counts total number of non-empty material names
+- `UNIQUE(...)` - Gets unique material names (removes duplicates)
+- `COUNTA(UNIQUE(...))` - Counts number of unique materials
+- `IF(...)` - Compares total count with unique count
+  - If equal: No duplicates → "✓ No duplicates"
+  - If different: Duplicates exist → "⚠ Duplicates found"
+
+**Usage:**
+- Place in a cell in the "Status" sheet (e.g., B2)
+- Shows "✓ No duplicates" if all material names are unique
+- Shows "⚠ Duplicates found" if there are duplicate material names
+- Updates automatically when "Request for Material" data changes
+
+**Optional: List Duplicate Materials**
+
+If you want to see which materials are duplicated, use this formula (place in cell, e.g., A4, will auto-expand down):
+```excel
+=IFERROR(UNIQUE(FILTER('Request for Material'!A2:A, 
+  ('Request for Material'!A2:A<>"") * 
+  (COUNTIF('Request for Material'!A2:A, 'Request for Material'!A2:A) > 1)
+)), "✓ No duplicates")
+```
+
+**Explanation of duplicate list formula:**
+- `COUNTIF('Request for Material'!A2:A, 'Request for Material'!A2:A)` - Counts occurrences of each material name
+- `> 1` - Returns TRUE if material appears more than once (duplicate)
+- `FILTER(...)` - Gets only materials that appear more than once
+- `UNIQUE(...)` - Removes duplicate entries from the duplicate list itself
+- `IFERROR(..., "✓ No duplicates")` - Shows friendly message if no duplicates found
+
+**Example:**
+- If "Request for Material" has "Iron Ore", "Copper Ore", "Iron Ore", "Silver Ore":
+  - Status cell: "⚠ Duplicates found"
+  - Duplicate list: "Iron Ore" (appears twice)
 
 ### List Missing Materials
 

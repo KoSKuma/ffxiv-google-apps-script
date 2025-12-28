@@ -105,7 +105,7 @@ Types:
 - Test edge cases and error conditions
 - Verify with different data sizes
 - Check execution time for large datasets
-- Remove test code before committing
+- Add test functions to `Test.gs` (kept in production for debugging)
 
 ## Documentation
 

@@ -45,7 +45,7 @@
    # or
    clasp push
    ```
-   **Note:** Files listed in `.claspignore` (like `LIBRARY_TEMPLATE.gs`) are excluded from push to prevent conflicts.
+   **Note:** Files listed in `.claspignore` (like `LIBRARY_TEMPLATE.gs` and documentation files) are excluded from push. `Test.gs` is included to allow testing in the Apps Script editor.
 3. **Open in Apps Script editor** to test:
    ```bash
    npm run open
@@ -155,7 +155,7 @@ function lookupItemInfo(itemName) {
 - Use `Test.gs` file for dedicated test functions
 
 ### Test Functions
-- Test functions are in `Test.gs` file (safe to keep, won't be removed)
+- Test functions are in `Test.gs` file (kept in production for debugging)
 - All test functions have `test` prefix
 - Test edge cases and error conditions
 - Use `onTestOpen()` to create test menu for easy access
@@ -168,7 +168,7 @@ function lookupItemInfo(itemName) {
 4. Click Run
 5. View logs: View → Logs or run `clasp logs` or `npm run logs`
 
-**Note:** `Test.gs` is included in pushes by default (not excluded in `.claspignore`). This allows you to test functions directly in the Apps Script editor.
+**Note:** `Test.gs` is included in pushes (not excluded in `.claspignore`) to allow testing functions directly in the Apps Script editor. This is intentional - test functions are kept in production for debugging purposes.
 
 **Available Test Functions:**
 - `testSearchItem()` - Test item search via XIVAPI

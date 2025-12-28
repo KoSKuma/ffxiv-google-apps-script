@@ -48,7 +48,7 @@ You have two options:
 4. **Find your new spreadsheet:**
    - The spreadsheet is automatically created and bound to your script
    - You can find it in your [Google Drive](https://drive.google.com)
-   - Or run `clasp open-script-script` to open the Apps Script editor, then click "Open Spreadsheet" in the menu
+   - Or run `clasp open-script` to open the Apps Script editor, then click "Open Spreadsheet" in the menu
    - The spreadsheet name will be the same as your project title
 
 #### Option B: Create Spreadsheet First, Then Clone Script (Alternative)
@@ -366,9 +366,17 @@ function processItems() {
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('FFXIV Tools')
-    .addItem('Lookup Item Info', 'lookupItem')
-    .addItem('Process Item List', 'processItems')
+    .addItem('Obtain Material Information', 'menuObtainMaterialInfo')
+    .addItem('Process Crafting Request', 'menuProcessCraftingRequest')
     .addToUi();
+}
+
+function menuObtainMaterialInfo() {
+  FFXIVTools.processItemList('Material Info', 'A', 2);
+}
+
+function menuProcessCraftingRequest() {
+  FFXIVTools.processCraftingRequest('Requested for Crafting');
 }
 ```
 

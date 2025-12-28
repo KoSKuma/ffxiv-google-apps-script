@@ -54,10 +54,11 @@ This Google Apps Script project is designed to automate and enhance Google Sheet
 - Functions: `searchItemByName()`, `getItemDetails()`, `getGatheringLocations()`, `getVendorInfo()`, `getCraftingTree()`, etc.
 
 ### Test.gs
-- **DEVELOPMENT ONLY**: Test functions for debugging and development
-- Not pushed to production (excluded via `.claspignore`)
+- **PRODUCTION**: Test functions for debugging and development
+- Included in production pushes (not excluded in `.claspignore`)
 - Contains test functions for all public API functions
-- Used for local testing and validation
+- Used for testing directly in Apps Script editor
+- Safe to keep in production for debugging purposes
 
 ### LIBRARY_TEMPLATE.gs
 - **TEMPLATE**: Copy-paste code for library integration
@@ -191,10 +192,9 @@ function myNewFunction(param1, param2) {
 ## File Exclusion
 
 Some files are excluded from being pushed to Apps Script via `.claspignore`:
-- `Test.gs` - Development test functions
-- `LIBRARY_TEMPLATE.gs` - Template code for library users
+- `LIBRARY_TEMPLATE.gs` - Template code for library users (prevents `onOpen()` conflicts)
 - Documentation files (`.md` files)
 - Configuration files (`.json`, `.gitignore`, etc.)
 
-This prevents conflicts and keeps the production code clean.
+**Note:** `Test.gs` is included in pushes (not excluded) to allow testing in the Apps Script editor.
 

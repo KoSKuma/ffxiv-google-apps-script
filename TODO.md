@@ -12,26 +12,17 @@ This file tracks tasks, features, and improvements for the FFXIV Google Apps Scr
 
 ## Current Sprint / Active Tasks
 
-### Setup & Configuration
-- ⬜ Set up `.clasp.json` with your Script ID
-- ⬜ Configure `appsscript.json` timezone if needed
-- ⬜ Test initial push to Apps Script
-- ⬜ Verify menu appears in Google Sheets
+Currently, there are no active tasks in the current sprint.
 
 ---
 
 ## Planned Features
 
 ### Core Functionality
-- ⬜ [Feature Name] - Description of what this feature does
-  - Subtask 1
-  - Subtask 2
-
-### Data Processing
-- ⬜ [Feature Name] - Description
-
-### UI/UX Improvements
-- ⬜ [Feature Name] - Description
+- ⬜ Item Information Lookup (Full) - Full version with market board prices from Universalis API
+  - Integrate Universalis API for market board prices
+  - Add price comparison (vendor vs market board)
+  - Add best source recommendation
 
 ---
 
@@ -43,22 +34,23 @@ This file tracks tasks, features, and improvements for the FFXIV Google Apps Scr
 - ⬜ Add comprehensive error handling
 
 ### Documentation
-- ⬜ Keep documentation up to date
-- ⬜ Add more examples to API.md
-- ⬜ Create user guide if needed
+- ⬜ Keep documentation up to date (ongoing)
+- ⬜ Add more examples to API.md if needed
 
 ### Testing
-- ⬜ Create test functions for critical logic
 - ⬜ Test with large datasets
 - ⬜ Test error scenarios
+- ⬜ Add more test functions to Test.gs as needed
 
 ---
 
 ## Future Ideas / Backlog
 
-- [Idea 1] - Description
-- [Idea 2] - Description
-- [Idea 3] - Description
+- Market board price integration (Universalis API)
+- Historical price trends
+- Cross-world price comparison
+- Crafting route optimization
+- Teamcraft export format support
 
 ---
 

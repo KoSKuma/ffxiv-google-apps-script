@@ -7,62 +7,79 @@
 - Keep main entry points in `Code.gs` or `Main.gs`
 - Use descriptive file names that reflect their purpose
 
+**Current Module Structure:**
+- `Code.gs` - Public API functions (exposed when used as library)
+- `Config.gs` - Internal configuration constants
+- `Utils.gs` - Internal utility functions for spreadsheet operations
+- `FFXIVAPI.gs` - Internal API integration functions
+- `Test.gs` - Test functions (kept in production for debugging)
+- `LIBRARY_TEMPLATE.gs` - Template code for library users (excluded from push)
+
 ## Code Style
 - Follow JavaScript ES5/ES6 best practices (Apps Script supports modern JS)
 - Use `const` and `let` instead of `var` when possible
 - Use arrow functions where appropriate
 - Prefer async/await over callbacks for asynchronous operations
-- Use JSDoc comments for function documentation
+- Use JSDoc comments for all functions (especially public API functions)
 - Keep functions focused and single-purpose
 - Use meaningful variable and function names
 
 ## Google Apps Script Specific
 - Always handle errors with try-catch blocks
 - Use `SpreadsheetApp.getActiveSpreadsheet()` for active spreadsheet operations
-- Cache frequently accessed data (ranges, values) to improve performance
-- Use batch operations (getValues/setValues) instead of cell-by-cell operations
 - Be mindful of execution time limits (6 minutes for regular scripts)
 - Use triggers appropriately (onEdit, onOpen, time-driven, etc.)
 - Always request minimal necessary permissions
 
-## Best Practices
-- Separate business logic from UI code
-- Use configuration objects for settings instead of hardcoding values
-- Implement proper error handling and logging
-- Use `Logger.log()` for debugging (remove before production)
-- Consider using `console.log()` for better debugging experience
-- Document API calls and external dependencies
-- Use meaningful constants for magic numbers and strings
-- Implement input validation for user-facing functions
-
-## File Organization
-- Keep utility functions in separate files (e.g., `Utils.gs`, `Helpers.gs`)
-- Group related functions together
-- Use namespaces or object literals to organize related code
-- Keep HTML templates in separate `.html` files
-
-## Testing
-- Create test functions for critical logic
-- Use descriptive test function names (e.g., `testCalculateTotal`)
-- Comment out or remove test code before deployment
-
-## Deployment
-- Never commit sensitive data (API keys, tokens, etc.)
-- Use Script Properties for configuration that shouldn't be in code
-- Document deployment steps in README
-- Version your code appropriately
-
 ## Performance
-- Minimize calls to SpreadsheetApp methods (cache results)
-- Use batch operations whenever possible
+- Cache frequently accessed data (ranges, values, spreadsheet objects) to improve performance
+- Use batch operations (getValues/setValues) instead of cell-by-cell operations
+- Minimize calls to SpreadsheetApp methods
 - Avoid nested loops when working with large datasets
 - Consider using Apps Script's built-in array methods (map, filter, reduce)
+- Implement rate limiting for external API calls (use `Utilities.sleep()`)
+
+## Error Handling and Logging
+- Wrap main functions in try-catch blocks
+- Use `logWithTimestamp()` from Utils.gs for timestamped logging (kept in production)
+- Provide user-friendly error messages
+- Log errors with context for debugging
+- Never log sensitive information (API keys, tokens, personal data)
 
 ## Security
 - Validate all user inputs
 - Sanitize data before writing to sheets
 - Use appropriate permission scopes
-- Never log sensitive information
+- Never commit sensitive data (API keys, tokens, etc.) to version control
+- Use Script Properties for configuration that shouldn't be in code
+
+## Library-Friendly Architecture
+- **Public Functions**: High-level functions in `Code.gs` that expose complete functionality
+- **Internal Functions**: Functions in `Utils.gs`, `FFXIVAPI.gs`, and `Config.gs` are not exposed
+- Library users call: `LibraryName.functionName()` - all internals are handled automatically
+- When adding public functions: Add to `Code.gs` with JSDoc comments indicating "PUBLIC API"
+- When adding internal functions: Add to appropriate module (`Utils.gs` for spreadsheet ops, `FFXIVAPI.gs` for API calls)
+
+## Testing
+- Create test functions for critical logic in `Test.gs`
+- Use descriptive test function names with `test` prefix (e.g., `testLookupItemInfo`)
+- Test functions are kept in production (not excluded) for debugging
+- Test edge cases and error conditions
+- Use `onTestOpen()` to create test menu for easy access
+
+## File Exclusion
+- Files excluded from `clasp push` (via `.claspignore`):
+  - `LIBRARY_TEMPLATE.gs` - Prevents `onOpen()` conflicts
+  - Documentation files (`.md` files)
+  - Configuration files (`.json`, `.gitignore`, etc.)
+- `Test.gs` is included in pushes (not excluded) for production debugging
+
+## Deployment
+- Test thoroughly using `Test.gs` functions before deployment
+- Update documentation (see Documentation Maintenance section)
+- Version your code appropriately
+- Document deployment steps in README
+- For library deployment: Publish → Deploy as library in Apps Script editor
 
 ## Communication and Workflow
 - **When answering questions**: Always answer the user's question first with a clear explanation
@@ -85,36 +102,63 @@
 - **Year accuracy**: Pay special attention to the year - verify it matches the current year
 
 ## Documentation Maintenance
-- **CRITICAL**: Update markdown documentation files when making significant changes
-- **When reviewing/checking files**: If the user asks to "check", "review", "verify", or "is this up to date" for any file:
-  - Compare the file content with the actual codebase implementation
-  - Check for discrepancies between documentation and code
-  - Verify all examples, function lists, and references are accurate
-  - Update any outdated information found
-  - Check related documentation files that might also need updates
-  - Report what was found and what was updated
-- When adding new functions: Update `API.md` with function documentation
-- When adding new features: Update `ARCHITECTURE.md` with module information
-- When changing workflows: Update `DEVELOPMENT.md` with new processes
-- When modifying code style: Update `CONTRIBUTING.md` and `.cursorrules`
-- When adding new patterns: Update `PROMPTS.md` with examples
-- Keep `README.md` up to date with project structure and setup instructions
-- **Feature Documentation**: Update `FEATURE.md` when making any changes to features
-  - When adding a new feature: Add complete documentation using the feature template in `FEATURE.md`
-  - When modifying an existing feature: Update the feature's documentation (parameters, behavior, examples)
-  - When removing/deprecating a feature: Mark as ❌ Deprecated and move to appropriate section
-  - When changing feature status: Update status indicator (✅ Implemented, 🟡 In Progress, ⬜ Planned)
-  - Include: function signature, parameters, return values, usage examples, how it works, and any notes
-- **Task Tracking**: Update `TODO.md` when completing tasks, adding new features, or identifying work items
-  - Mark completed tasks as ✅ and move to "Completed Tasks" section
-  - Add new tasks to appropriate sections (Current Sprint, Planned Features, Technical Debt, etc.)
-  - Update task status (⬜ Not Started, 🟡 In Progress, ✅ Completed, ❌ Cancelled)
-- **Library Template Maintenance**: Update `LIBRARY_TEMPLATE.gs` when making changes to menu handlers in `Code.gs`
-  - When modifying `onOpen()` function: Update the menu structure in `LIBRARY_TEMPLATE.gs`
-  - When modifying menu handler functions (`menuLookupItemInfo`, `menuProcessItemList`, etc.): Update the corresponding functions in `LIBRARY_TEMPLATE.gs`
-  - Keep the template identical to `Code.gs` menu handlers, but replace direct function calls with library calls (e.g., `lookupItemInfo()` → `FFXIVTools.lookupItemInfo()`)
-  - The template should mirror `Code.gs` menu handlers exactly, only changing function calls to use the library identifier
-- Documentation should reflect the current state of the codebase
-- If AI assistants are used, ensure they update relevant documentation files including `TODO.md`, `FEATURE.md`, and `LIBRARY_TEMPLATE.gs`
-- Review documentation accuracy during code reviews
 
+### General Principles
+- **CRITICAL**: Update markdown documentation files when making significant changes
+- Documentation should reflect the current state of the codebase
+- Review documentation accuracy during code reviews
+- If AI assistants are used, ensure they update relevant documentation files
+
+### When Reviewing/Checking Files
+If the user asks to "check", "review", "verify", or "is this up to date" for any file:
+- Compare the file content with the actual codebase implementation
+- Check for discrepancies between documentation and code
+- Verify all examples, function lists, and references are accurate
+- Update any outdated information found
+- Check related documentation files that might also need updates
+- Report what was found and what was updated
+
+### Documentation Files to Update
+
+**When adding new functions:**
+- Update `API.md` with function documentation (if public API)
+- Update `FEATURE.md` if it's a new feature
+
+**When adding new features:**
+- Update `FEATURE.md` with complete feature documentation
+- Update `ARCHITECTURE.md` with module information
+- Update `API.md` if adding public API functions
+- Update `TODO.md` to track progress
+
+**When changing workflows:**
+- Update `DEVELOPMENT.md` with new processes
+
+**When modifying code style:**
+- Update `CONTRIBUTING.md` and `.cursorrules`
+
+**When adding new patterns:**
+- Update `PROMPTS.md` with examples
+
+**General maintenance:**
+- Keep `README.md` up to date with project structure and setup instructions
+
+### Feature Documentation (FEATURE.md)
+Update `FEATURE.md` when making any changes to features:
+- **Adding a new feature**: Add complete documentation using the feature template in `FEATURE.md`
+- **Modifying an existing feature**: Update the feature's documentation (parameters, behavior, examples)
+- **Removing/deprecating a feature**: Mark as ❌ Deprecated and move to appropriate section
+- **Changing feature status**: Update status indicator (✅ Implemented, 🟡 In Progress, 🧪 Debug/Utility, ⬜ Planned)
+- **Required information**: Include function signature, parameters, return values, usage examples, how it works, and any notes
+
+### Task Tracking (TODO.md)
+Update `TODO.md` when completing tasks, adding new features, or identifying work items:
+- Mark completed tasks as ✅ and move to "Completed Tasks" section
+- Add new tasks to appropriate sections (Current Sprint, Planned Features, Technical Debt, etc.)
+- Update task status (⬜ Not Started, 🟡 In Progress, ✅ Completed, ❌ Cancelled)
+
+### Library Template Maintenance (LIBRARY_TEMPLATE.gs)
+Update `LIBRARY_TEMPLATE.gs` when making changes to menu handlers in `Code.gs`:
+- When modifying `onOpen()` function: Update the menu structure in `LIBRARY_TEMPLATE.gs`
+- When modifying menu handler functions: Update the corresponding functions in `LIBRARY_TEMPLATE.gs`
+- Keep the template identical to `Code.gs` menu handlers, but replace direct function calls with library calls (e.g., `lookupItemInfo()` → `FFXIVTools.lookupItemInfo()`)
+- The template should mirror `Code.gs` menu handlers exactly, only changing function calls to use the library identifier
